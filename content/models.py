@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Blog(models.Model):
@@ -54,7 +55,12 @@ class Rating(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     blog = models.ForeignKey(
         Blog, on_delete=models.CASCADE, related_name='ratings')
-    score = models.PositiveSmallIntegerField()
+    score = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(5)
+        ]
+    )
 
     class Meta:
         # Each user can rate a blog only once
