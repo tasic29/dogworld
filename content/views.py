@@ -1,15 +1,25 @@
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAdminUser
-from rest_framework.response import Response
-from rest_framework import status
+
+from .pagination import DefaultPagination
+from .permissions import IsAuthorOrAdminOrReadOnly
+
 
 from .serializers import BlogSerializer, CommentSerializer, PostSerializer, RatingSerializer, TagSerializer
 from .models import Blog, Post, Tag, Comment, Rating
 
 
 class BlogViewSet(ModelViewSet):
-    queryset = Blog.objects.all()
+    queryset = Blog.objects.select_related(
+        'author').prefetch_related('tags').all()
     serializer_class = BlogSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['created', 'updated']
+    search_fields = ['title', 'content']
+    ordering_fields = ['id', 'created', 'updated']
+    pagination_class = DefaultPagination
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
@@ -22,8 +32,21 @@ class BlogViewSet(ModelViewSet):
 
 
 class PostViewSet(ModelViewSet):
-    queryset = Post.objects.all()
     serializer_class = PostSerializer
+    permission_classes = [IsAuthorOrAdminOrReadOnly]
+    pagination_class = DefaultPagination
+
+    def get_queryset(self):
+        if self.action in ['list', 'retrieve']:
+            return Post.objects.all().select_related('author').prefetch_related('tag')
+        if self.request.user.is_staff:
+            return Post.objects.all()
+        return Post.objects.filter(author=self.request.user)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['author'] = self.request.user
+        return context
 
 
 class CommentViewSet(ModelViewSet):

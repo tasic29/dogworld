@@ -16,6 +16,9 @@ class Blog(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        verbose_name_plural = 'Blog'
+
 
 class Post(models.Model):
     author = models.ForeignKey(

@@ -12,6 +12,9 @@ class MyUser(AbstractUser):
     def __str__(self):
         return self.username
 
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
+
 
 class UserProfile(models.Model):
     user = models.OneToOneField(

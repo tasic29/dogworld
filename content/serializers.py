@@ -22,10 +22,33 @@ class BlogSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
+    author = PublicUserSerializer(read_only=True)
+    tag = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Tag.objects.all()
+    )
+
     class Meta:
         model = Post
         fields = ['id', 'author', 'image', 'caption',
                   'youtube_url', 'created_at', 'tag']
+        read_only_fields = ['id', 'author', 'created_at']
+
+    def create(self, validated_data):
+        author = self.context['author']
+        tags = validated_data.pop('tag', [])
+        post = Post.objects.create(author=author, **validated_data)
+        post.tag.set(tags)
+        return post
+
+    def update(self, instance, validated_data):
+        tags = validated_data.pop('tag', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if tags is not None:
+            instance.tag.set(tags)
+        instance.save()
+        return instance
 
 
 class CommentSerializer(serializers.ModelSerializer):
