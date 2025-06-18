@@ -1,5 +1,6 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet
 
@@ -50,8 +51,31 @@ class PostViewSet(ModelViewSet):
 
 
 class CommentViewSet(ModelViewSet):
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        queryset = Comment.objects.all().select_related('user', 'blog', 'post')
+
+        blog_pk = self.kwargs.get('blog_pk')
+        post_pk = self.kwargs.get('post_pk')
+
+        if blog_pk:
+            queryset = queryset.filter(blog_id=blog_pk)
+        elif post_pk:
+            queryset = queryset.filter(post_id=post_pk)
+
+        return queryset
+
+    def perform_update(self, serializer):
+        if serializer.instance.user != self.request.user and not self.request.user.is_staff:
+            raise PermissionDenied("You can only edit your own comments.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.user != self.request.user and not self.request.user.is_staff:
+            raise PermissionDenied("You can only delete your own comments.")
+        instance.delete()
 
 
 class RatingViewSet(ModelViewSet):

@@ -52,9 +52,53 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    user = PublicUserSerializer(read_only=True)
+    post = serializers.PrimaryKeyRelatedField(
+        queryset=Post.objects.all(), write_only=True, required=False, allow_null=True
+    )
+    blog = serializers.PrimaryKeyRelatedField(
+        queryset=Blog.objects.all(), write_only=True, required=False, allow_null=True
+    )
+    post_id = serializers.IntegerField(source='post.id', read_only=True)
+    blog_id = serializers.IntegerField(source='blog.id', read_only=True)
+
+    def validate(self, data):
+
+        request = self.context.get('request')
+        view = self.context.get('view')
+
+        blog_pk = getattr(view, 'kwargs', {}).get('blog_pk')
+        post_pk = getattr(view, 'kwargs', {}).get('post_pk')
+
+        if blog_pk:
+            data['blog'] = Blog.objects.get(pk=blog_pk)
+            data.pop('post', None)
+        elif post_pk:
+            data['post'] = Post.objects.get(pk=post_pk)
+            data.pop('blog', None)
+        else:
+
+            blog = data.get('blog')
+            post = data.get('post')
+
+            if not blog and not post:
+                raise serializers.ValidationError(
+                    "Comment must be linked to either a blog or a post.")
+            if blog and post:
+                raise serializers.ValidationError(
+                    "Comment cannot be linked to both a blog and a post.")
+        return data
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return Comment.objects.create(**validated_data)
+
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'blog', 'content']
+        fields = [
+            'id', 'user', 'blog', 'post', 'blog_id', 'post_id', 'content', 'created'
+        ]
+        read_only_fields = ['id', 'user', 'created']
 
 
 class RatingSerializer(serializers.ModelSerializer):
