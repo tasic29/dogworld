@@ -13,6 +13,19 @@ class Blog(models.Model):
     updated = models.DateTimeField(auto_now=True)
     tags = models.ManyToManyField('Tag', blank=True)
 
+    @property
+    def average_rating(self):
+        result = self.ratings.aggregate(avg=models.Avg('score'))
+        return round(result['avg'], 1) if result['avg'] else None
+
+    @property
+    def total_ratings(self):
+        return self.ratings.count()
+
+    @property
+    def total_comments(self):
+        return self.comments.count()
+
     def __str__(self):
         return self.title
 
@@ -29,6 +42,19 @@ class Post(models.Model):
     youtube_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     tag = models.ManyToManyField('Tag', related_name='posts', blank=True)
+
+    @property
+    def average_rating(self):
+        result = self.ratings.aggregate(avg=models.Avg('score'))
+        return round(result['avg'], 1) if result['avg'] else None
+
+    @property
+    def total_ratings(self):
+        return self.ratings.count()
+
+    @property
+    def total_comments(self):
+        return self.comments.count()
 
     def __str__(self):
         return f"Post by {self.author.username} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
@@ -61,9 +87,18 @@ class Comment(models.Model):
 
 class Rating(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
     blog = models.ForeignKey(
-        Blog, on_delete=models.CASCADE, related_name='ratings')
+        Blog, on_delete=models.CASCADE,
+        related_name='ratings',
+        null=True, blank=True
+    )
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE,
+        related_name='ratings',
+        null=True, blank=True
+    )
     score = models.PositiveSmallIntegerField(
         validators=[
             MinValueValidator(1),
@@ -72,8 +107,9 @@ class Rating(models.Model):
     )
 
     class Meta:
-        # Each user can rate a blog only once
-        unique_together = ['user', 'blog']
+        unique_together = [('user', 'blog'), ('user', 'post')]
+        ordering = ['-id']
 
     def __str__(self):
-        return f'{self.user.username} rated {self.blog.title} - {self.score} stars'
+        target = self.blog.title if self.blog else f"Post {self.post.id}"
+        return f"Rating {self.score} by {self.user.username} on {target}"

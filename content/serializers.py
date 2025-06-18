@@ -13,11 +13,14 @@ class TagSerializer(serializers.ModelSerializer):
 class BlogSerializer(serializers.ModelSerializer):
     author = PublicUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    total_ratings = serializers.ReadOnlyField()
+    average_rating = serializers.ReadOnlyField()
+    total_comments = serializers.ReadOnlyField()
 
     class Meta:
         model = Blog
         fields = ['id', 'author', 'title', 'content',
-                  'image', 'created', 'updated', 'tags']
+                  'image', 'created', 'updated', 'tags', 'total_comments', 'total_ratings', 'average_rating']
         read_only_fields = ['id', 'author', 'created', 'updated']
 
 
@@ -27,11 +30,14 @@ class PostSerializer(serializers.ModelSerializer):
         many=True,
         queryset=Tag.objects.all()
     )
+    total_ratings = serializers.ReadOnlyField()
+    average_rating = serializers.ReadOnlyField()
+    total_comments = serializers.ReadOnlyField()
 
     class Meta:
         model = Post
         fields = ['id', 'author', 'image', 'caption',
-                  'youtube_url', 'created_at', 'tag']
+                  'youtube_url', 'created_at', 'tag', 'total_comments', 'total_ratings', 'average_rating']
         read_only_fields = ['id', 'author', 'created_at']
 
     def create(self, validated_data):
@@ -102,6 +108,54 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class RatingSerializer(serializers.ModelSerializer):
+    user = PublicUserSerializer(read_only=True)
+    blog = serializers.PrimaryKeyRelatedField(
+        queryset=Blog.objects.all(), write_only=True, required=False, allow_null=True
+    )
+    post = serializers.PrimaryKeyRelatedField(
+        queryset=Post.objects.all(), write_only=True, required=False, allow_null=True
+    )
+
+    blog_id = serializers.IntegerField(source='blog.id', read_only=True)
+    post_id = serializers.IntegerField(source='post.id', read_only=True)
+
+    def validate(self, data):
+
+        request = self.context.get('request')
+        view = self.context.get('view')
+
+        blog_pk = getattr(view, 'kwargs', {}).get('blog_pk')
+        post_pk = getattr(view, 'kwargs', {}).get('post_pk')
+
+        if blog_pk:
+            data['blog'] = Blog.objects.get(pk=blog_pk)
+            data.pop('post', None)
+        elif post_pk:
+            data['post'] = Post.objects.get(pk=post_pk)
+            data.pop('blog', None)
+        else:
+
+            if self.instance:
+                blog = data.get('blog', self.instance.blog)
+                post = data.get('post', self.instance.post)
+            else:
+                blog = data.get('blog')
+                post = data.get('post')
+
+            if not blog and not post:
+                raise serializers.ValidationError(
+                    "Rating must be linked to either a blog or a post.")
+            if blog and post:
+                raise serializers.ValidationError(
+                    "Rating cannot be linked to both a blog and a post.")
+
+        return data
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return Rating.objects.create(**validated_data)
+
     class Meta:
         model = Rating
-        fields = ['id', 'user', 'blog', 'score']
+        fields = ['id', 'user', 'blog', 'post', 'blog_id', 'post_id', 'score']
+        read_only_fields = ['id', 'user']

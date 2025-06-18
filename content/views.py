@@ -79,8 +79,31 @@ class CommentViewSet(ModelViewSet):
 
 
 class RatingViewSet(ModelViewSet):
-    queryset = Rating.objects.all()
     serializer_class = RatingSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        queryset = Rating.objects.all().select_related('user', 'blog', 'post')
+
+        blog_pk = self.kwargs.get('blog_pk')
+        post_pk = self.kwargs.get('post_pk')
+
+        if blog_pk:
+            queryset = queryset.filter(blog_id=blog_pk)
+        elif post_pk:
+            queryset = queryset.filter(post_id=post_pk)
+
+        return queryset
+
+    def perform_update(self, serializer):
+        if serializer.instance.user != self.request.user and not self.request.user.is_staff:
+            raise PermissionDenied("You can only update your own ratings.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.user != self.request.user and not self.request.user.is_staff:
+            raise PermissionDenied("You can only delete your own ratings.")
+        instance.delete()
 
 
 class TagViewSet(ModelViewSet):
