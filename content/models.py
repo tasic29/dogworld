@@ -45,12 +45,18 @@ class Comment(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     blog = models.ForeignKey(
-        Blog, on_delete=models.CASCADE, related_name='comments')
+        Blog, on_delete=models.CASCADE, related_name='comments', null=True, blank=True)
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, related_name='comments', null=True, blank=True)
     content = models.TextField(max_length=1000)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'Comment by {self.user.username} on {self.blog.title}'
+        target = self.blog.title if self.blog else f"Post {self.post.id}"
+        return f'Comment by {self.user.username} on {target}'
+
+    class Meta:
+        ordering = ['-created']
 
 
 class Rating(models.Model):
