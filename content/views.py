@@ -1,6 +1,8 @@
 from django.db.models import Count, Avg
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import (IsAuthenticatedOrReadOnly,
+                                        IsAdminUser,
+                                        AllowAny)
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet
@@ -60,7 +62,7 @@ class PostViewSet(ModelViewSet):
     filterset_fields = ['created_at', 'author', 'tags']
     search_fields = ['caption', 'tag__name', 'author__username',
                      'author__first_name', 'author__last_name']
-    ordering_fields = ['id', 'created_at']
+    ordering_fields = ['id', 'title',  'created_at']
     pagination_class = DefaultPagination
 
     def get_queryset(self):
@@ -90,6 +92,13 @@ class PostViewSet(ModelViewSet):
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['user__username', 'user__first_name',
+                        'user__last_name', 'created']
+    search_fields = ['user__username', 'user__first_name',
+                     'user__last_name', 'content']
+    ordering_fields = ['id', 'created']
+    pagination_class = DefaultPagination
 
     def get_queryset(self):
         queryset = Comment.objects.all().select_related('user', 'blog', 'post')
@@ -146,3 +155,11 @@ class RatingViewSet(ModelViewSet):
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['name']
+    ordering_fields = ['id', 'name']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        return [AllowAny()]

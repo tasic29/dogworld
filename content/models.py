@@ -45,6 +45,7 @@ class Post(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts'
     )
+    title = models.CharField(max_length=255)
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
     caption = models.TextField(max_length=1000, blank=True)
     youtube_url = models.URLField(blank=True, null=True)
@@ -54,7 +55,7 @@ class Post(models.Model):
     objects = PostManager()
 
     def __str__(self):
-        return f"Post by {self.author.username} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+        return f"{self.title} by {self.author.username}"
 
     class Meta:
         indexes = [
@@ -80,6 +81,7 @@ class Comment(models.Model):
         Post, on_delete=models.CASCADE, related_name='comments', null=True, blank=True)
     content = models.TextField(max_length=1000)
     created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         target = self.blog.title if self.blog else f"Post {self.post.id}"
