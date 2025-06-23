@@ -1,6 +1,16 @@
 from django.db import models
+
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+
+
+class BlogManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            avg_rating=models.Avg('ratings__score'),
+            rating_count=models.Count('ratings', distinct=True),
+            comment_count=models.Count('comments', distinct=True)
+        )
 
 
 class Blog(models.Model):
@@ -13,24 +23,22 @@ class Blog(models.Model):
     updated = models.DateTimeField(auto_now=True)
     tags = models.ManyToManyField('Tag', blank=True)
 
-    @property
-    def average_rating(self):
-        result = self.ratings.aggregate(avg=models.Avg('score'))
-        return round(result['avg'], 1) if result['avg'] else None
-
-    @property
-    def total_ratings(self):
-        return self.ratings.count()
-
-    @property
-    def total_comments(self):
-        return self.comments.count()
+    objects = BlogManager()
 
     def __str__(self):
         return self.title
 
     class Meta:
         verbose_name_plural = 'Blog'
+
+
+class PostManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('author').annotate(
+            avg_rating=models.Avg('ratings__score'),
+            rating_count=models.Count('ratings', distinct=True),
+            comment_count=models.Count('comments', distinct=True)
+        )
 
 
 class Post(models.Model):
@@ -41,23 +49,19 @@ class Post(models.Model):
     caption = models.TextField(max_length=1000, blank=True)
     youtube_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    tag = models.ManyToManyField('Tag', related_name='posts', blank=True)
+    tags = models.ManyToManyField('Tag', related_name='posts', blank=True)
 
-    @property
-    def average_rating(self):
-        result = self.ratings.aggregate(avg=models.Avg('score'))
-        return round(result['avg'], 1) if result['avg'] else None
-
-    @property
-    def total_ratings(self):
-        return self.ratings.count()
-
-    @property
-    def total_comments(self):
-        return self.comments.count()
+    objects = PostManager()
 
     def __str__(self):
         return f"Post by {self.author.username} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['author', 'created_at']),
+            models.Index(fields=['author']),
+        ]
 
 
 class Tag(models.Model):

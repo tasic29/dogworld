@@ -26,7 +26,7 @@ class BlogSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     author = PublicUserSerializer(read_only=True)
-    tag = serializers.PrimaryKeyRelatedField(
+    tags = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Tag.objects.all()
     )
@@ -37,7 +37,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'author', 'image', 'caption',
-                  'youtube_url', 'created_at', 'tag', 'total_comments', 'total_ratings', 'average_rating']
+                  'youtube_url', 'created_at', 'tags', 'total_comments', 'total_ratings', 'average_rating']
         read_only_fields = ['id', 'author', 'created_at']
 
     def create(self, validated_data):
