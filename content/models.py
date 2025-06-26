@@ -30,6 +30,7 @@ class Blog(models.Model):
 
     class Meta:
         verbose_name_plural = 'Blog'
+        ordering = ['-created']
 
 
 class PostManager(models.Manager):
@@ -46,7 +47,9 @@ class Post(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts'
     )
     title = models.CharField(max_length=255)
-    image = models.ImageField(upload_to='post_images/', blank=True, null=True)
+    image = models.ImageField(
+        upload_to='post_images/',
+        blank=True, null=True)
     caption = models.TextField(max_length=1000, blank=True)
     youtube_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

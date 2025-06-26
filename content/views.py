@@ -1,9 +1,10 @@
 from django.db.models import Count, Avg
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import (IsAuthenticatedOrReadOnly,
                                         IsAdminUser,
                                         AllowAny)
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet
 
@@ -135,11 +136,23 @@ class RatingViewSet(ModelViewSet):
         post_pk = self.kwargs.get('post_pk')
 
         if blog_pk:
-            queryset = queryset.filter(blog_id=blog_pk)
+            get_object_or_404(Blog, pk=blog_pk)
+            return queryset.filter(blog_id=blog_pk)
         elif post_pk:
-            queryset = queryset.filter(post_id=post_pk)
+            get_object_or_404(Post, pk=post_pk)
+            return queryset.filter(post_id=post_pk)
 
         return queryset
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        blog = serializer.validated_data.get('blog')
+        post = serializer.validated_data.get('post')
+
+        if (blog and blog.author == user) or (post and post.author == user):
+            raise ValidationError("You cannot rate your own blog or post.")
+
+        serializer.save(user=user)
 
     def perform_update(self, serializer):
         if serializer.instance.user != self.request.user and not self.request.user.is_staff:

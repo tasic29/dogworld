@@ -42,17 +42,17 @@ class PostSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         author = self.context['author']
-        tags = validated_data.pop('tag', [])
+        tags = validated_data.pop('tags', [])
         post = Post.objects.create(author=author, **validated_data)
-        post.tag.set(tags)
+        post.tags.set(tags)
         return post
 
     def update(self, instance, validated_data):
-        tags = validated_data.pop('tag', None)
+        tags = validated_data.pop('tags', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if tags is not None:
-            instance.tag.set(tags)
+            instance.tags.set(tags)
         instance.save()
         return instance
 

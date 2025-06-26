@@ -30,6 +30,8 @@ class BlogAdmin(admin.ModelAdmin):
             )
         return 'No Image Available'
 
+    thumbnail.short_description = 'Image'
+
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
@@ -77,15 +79,6 @@ class PostAdmin(admin.ModelAdmin):
         return obj.comment_count
     comment_count.short_description = 'Comments'
 
-    def thumbnail(self, obj):
-        if obj.image:
-            return format_html(
-                '<a href="{}" target="_blank"><img src="{}" style="width: 60px; height: 60px; object-fit: cover;" /></a>',
-                obj.image.url,
-                obj.image.url
-            )
-        return 'No Image Available'
-
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
@@ -110,10 +103,41 @@ class CommentAdmin(admin.ModelAdmin):
     short_content.short_description = 'Content'
 
 
+class RatingFilter(admin.SimpleListFilter):
+    title = 'Rating'
+    parameter_name = 'rating'
+
+    def lookups(self, request, model_admin):
+        return [
+            ('>4', '4+ stars'),
+            ('<4', '4 stars or less'),
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value() == '>4':
+            return queryset.filter(score__gt=4)
+        return queryset.filter(score__lte=4)
+
+
+@admin.action(description='Reset ratings')
+def reset_rating(model_admin, request, queryset):
+    updated_count = queryset.update(score=0)
+    model_admin.message_user(
+        request, f'{updated_count} rating(s) were reset to 0.')
+
+
 @admin.register(Rating)
 class RatingAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'blog', 'post', 'score']
+    def blog_title(self, obj):
+        return obj.blog.title if obj.blog else '-'
+
+    def post_title(self, obj):
+        return obj.post.title if obj.post else '-'
+
+    list_display = ['id', 'user', 'blog_title', 'post_title', 'score']
     search_fields = ['user__username', 'user__first_name',
                      'user__last_name', 'blog__title', 'post__title']
-    list_filter = ['blog', 'post', 'user']
+    list_filter = ['blog', 'post', 'user', RatingFilter]
+    autocomplete_fields = ['blog', 'post', 'user']
+    actions = [reset_rating]
     list_per_page = 10
