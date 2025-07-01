@@ -35,7 +35,8 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    path('', include('content.urls')),
+    path('content/', include('content.urls')),
+    path('marketplace/', include('marketplace.urls')),
 ] + debug_toolbar_urls()
 
 if settings.DEBUG:

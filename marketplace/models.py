@@ -24,6 +24,7 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['-updated_at']
+        verbose_name_plural = 'Products'
 
 
 class Category(models.Model):

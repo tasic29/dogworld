@@ -8,7 +8,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet
 
-from .pagination import DefaultPagination
+from core.pagination import DefaultPagination
 from .permissions import IsAuthorOrAdminOrReadOnly
 
 
