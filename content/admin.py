@@ -115,8 +115,8 @@ class RatingFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == '>4':
-            return queryset.filter(score__gt=4)
-        return queryset.filter(score__lte=4)
+            return queryset.filter(score__gte=4)
+        return queryset.filter(score__lt=4)
 
 
 @admin.action(description='Reset ratings')
