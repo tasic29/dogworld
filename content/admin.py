@@ -9,7 +9,7 @@ class BlogAdmin(admin.ModelAdmin):
     list_display = ['id', 'thumbnail', 'title',
                     'created', 'updated']
     autocomplete_fields = ['author']
-    search_fields = ['title', 'tag__name']
+    search_fields = ['title__icontains', 'tag__name__icontains']
     ordering = ['-created']
     list_per_page = 10
     list_filter = ['created', 'updated', 'tags']

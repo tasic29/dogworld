@@ -14,6 +14,7 @@ class ServiceViewSet(ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['service_type', 'city']
-    search_fields = ['name', 'service_type', 'city', 'description']
+    search_fields = ['name__icontains', 'service_type__icontains',
+                     'city__icontains', 'description__contains']
     ordering_fields = ['id', 'name', 'service_type', 'city']
     pagination_class = DefaultPagination

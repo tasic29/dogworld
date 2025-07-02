@@ -21,7 +21,8 @@ class ProductViewSet(ModelViewSet):
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['created_at', 'category', 'tags']
-    search_fields = ['title', 'description', 'tags__name', 'category__name']
+    search_fields = ['title__icontains', 'description__icontains',
+                     'tags__name__icontains', 'category__name__icontains']
     ordering_fields = ['id', 'title', 'price', 'created_at']
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = DefaultPagination
@@ -32,7 +33,7 @@ class CategoryViewSet(ModelViewSet):
     serializer_class = CategorySerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['name', 'slug']
-    search_fields = ['name', 'slug']
+    search_fields = ['name__icontains', 'slug__icontains']
     ordering_fields = ['id', 'name']
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = DefaultPagination
@@ -55,7 +56,7 @@ class TagViewSet(ModelViewSet):
     serializer_class = TagSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['name']
-    search_fields = ['name']
+    search_fields = ['name__icontains']
     ordering_fields = ['id', 'name']
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = DefaultPagination

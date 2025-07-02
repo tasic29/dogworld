@@ -24,7 +24,7 @@ class BlogViewSet(ModelViewSet):
     serializer_class = BlogSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['created', 'updated']
-    search_fields = ['title', 'content']
+    search_fields = ['title__icontains', 'content__icontains']
     ordering_fields = ['id', 'created', 'updated']
     pagination_class = DefaultPagination
 
@@ -61,8 +61,8 @@ class PostViewSet(ModelViewSet):
     permission_classes = [IsAuthorOrAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['created_at', 'author', 'tags']
-    search_fields = ['caption', 'tag__name', 'author__username',
-                     'author__first_name', 'author__last_name']
+    search_fields = ['caption__icontains', 'tags__name', 'author__username__icontains',
+                     'author__first_name__icontains', 'author__last_name__icontains']
     ordering_fields = ['id', 'title',  'created_at']
     pagination_class = DefaultPagination
 
@@ -96,8 +96,8 @@ class CommentViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['user__username', 'user__first_name',
                         'user__last_name', 'created']
-    search_fields = ['user__username', 'user__first_name',
-                     'user__last_name', 'content']
+    search_fields = ['user__username__icontains', 'user__first_name__icontains',
+                     'user__last_name__icontains', 'content__icontains']
     ordering_fields = ['id', 'created']
     pagination_class = DefaultPagination
 
@@ -169,7 +169,7 @@ class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ['name']
+    search_fields = ['name__icontains']
     ordering_fields = ['id', 'name']
 
     def get_permissions(self):
