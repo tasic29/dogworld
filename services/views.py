@@ -13,7 +13,7 @@ class ServiceViewSet(ModelViewSet):
     serializer_class = ServiceSerializer
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['name', 'service_type', 'city']
-    search_fields = ['name', 'service_type', 'city']
+    filterset_fields = ['service_type', 'city']
+    search_fields = ['name', 'service_type', 'city', 'description']
     ordering_fields = ['id', 'name', 'service_type', 'city']
     pagination_class = DefaultPagination
