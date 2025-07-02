@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'core',
     'content',
     'marketplace',
+    'services',
 ]
 
 MIDDLEWARE = [

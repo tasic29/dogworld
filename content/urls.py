@@ -5,13 +5,13 @@ from .views import BlogViewSet, CommentViewSet, PostViewSet, RatingViewSet, TagV
 
 
 router = routers.DefaultRouter()
-router.register('blog', BlogViewSet, basename='blog')
+router.register('blogs', BlogViewSet, basename='blog')
 router.register('posts', PostViewSet, basename='post')
 router.register('comments', CommentViewSet, basename='comment')
 router.register('ratings', RatingViewSet, basename='rating')
 router.register('tags', TagViewSet, basename='tag')
 
-blog_router = routers.NestedDefaultRouter(router, 'blog', lookup='blog')
+blog_router = routers.NestedDefaultRouter(router, 'blogs', lookup='blog')
 blog_router.register('comments', CommentViewSet, basename='blog-comments')
 blog_router.register('ratings', RatingViewSet, basename='blog-ratings')
 
