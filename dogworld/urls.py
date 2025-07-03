@@ -38,6 +38,7 @@ urlpatterns = [
     path('content/', include('content.urls')),
     path('marketplace/', include('marketplace.urls')),
     path('services/', include('services.urls')),
+    path('messaging/', include('messaging.urls')),
 ] + debug_toolbar_urls()
 
 if settings.DEBUG:
