@@ -26,12 +26,25 @@ class MessageViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        qs = Message.objects.select_related(
+            'sender', 'receiver').all()
+
         if self.request.user.is_staff:
-            return Message.objects.all()
-        return Message.objects.filter(
+            return qs
+
+        return qs.filter(
             Q(sender=user, is_deleted_by_sender=False) |
             Q(receiver=user, is_deleted_by_receiver=False)
         )
+
+    # def get_queryset(self):
+    #     user = self.request.user
+    #     if self.request.user.is_staff:
+    #         return Message.objects.all()
+    #     return Message.objects.filter(
+    #         Q(sender=user, is_deleted_by_sender=False) |
+    #         Q(receiver=user, is_deleted_by_receiver=False)
+    #     )
 
     def list(self, request, *args, **kwargs):
         if not request.user.is_authenticated:

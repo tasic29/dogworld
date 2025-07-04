@@ -5,8 +5,13 @@ from .models import Message, Notification
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['sender']
-    list_display = ['id', 'sender', 'receiver', 'content', 'sent_at']
+    def short_content(self, obj):
+        return (obj.content[:50] + '...') if len(obj.content) > 50 else obj.content
+    short_content.short_description = 'Content'
+
+    autocomplete_fields = ['sender', 'receiver']
+    list_display = ['id', 'sender', 'receiver', 'short_content', 'sent_at']
+    list_filter = ['is_read', 'sent_at']
     list_select_related = ['sender', 'receiver']
     search_fields = [
         'sender__user__first_name',
