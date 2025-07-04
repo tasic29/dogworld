@@ -5,24 +5,28 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.conf import settings
 
+from .validators import validate_file_extension, validate_file_size
+
 
 class Message(models.Model):
-
-    def validate_file_extension(value):
-        ext = os.path.splitext(value.name)[1]
-        valid_extensions = ['.jpg', '.jpeg',
-                            '.png', '.pdf', '.doc', '.docx', '.gif', 'mp4']
-        if not ext.lower() in valid_extensions:
-            raise ValidationError('Unsupported file extension.')
-
     sender = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_messages')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='sent_messages'
+    )
     receiver = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_messages')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='received_messages'
+    )
     content = models.TextField(max_length=1000)
     is_read = models.BooleanField(default=False)
     attachment = models.FileField(
-        upload_to='attachments/', blank=True, null=True, validators=[validate_file_extension])
+        upload_to='attachments/',
+        blank=True,
+        null=True,
+        validators=[validate_file_extension, validate_file_size]
+    )
     is_deleted_by_sender = models.BooleanField(default=False)
     is_deleted_by_receiver = models.BooleanField(default=False)
     sent_at = models.DateTimeField(auto_now_add=True)

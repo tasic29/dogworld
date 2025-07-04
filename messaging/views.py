@@ -4,6 +4,10 @@ from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.exceptions import MethodNotAllowed
+from rest_framework.decorators import action
+from rest_framework import status
+
 
 from .models import Message, Notification
 from .serializers import MessageSerializer, NotificationSerializer
@@ -15,8 +19,7 @@ class MessageViewSet(ModelViewSet):
     serializer_class = MessageSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['sender_id', 'receiver_id']
-    search_fields = ['sender__username__icontains',
-                     'receiver__username__icontains']
+    search_fields = ['content']
     ordering_fields = ['id', 'sent_at']
     permission_classes = [MessagePermission]
     pagination_class = DefaultPagination
@@ -55,14 +58,51 @@ class MessageViewSet(ModelViewSet):
         else:
             instance.save()
 
+    def update(self, request, *args, **kwargs):
+        raise MethodNotAllowed("PUT is not allowed for messages.")
+
+    def partial_update(self, request, *args, **kwargs):
+        raise MethodNotAllowed("PATCH is not allowed for messages.")
+
+    @action(detail=True, methods=['post', 'get'])
+    def mark_as_read(self, request, pk=None):
+        message = self.get_object()
+
+        self.check_object_permissions(request, message)
+
+        if message.receiver != request.user:
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+
+        if message.is_read:
+            return Response({'status': 'Message already read'}, status=status.HTTP_200_OK)
+
+        message.is_read = True
+        message.save()
+        return Response({'status': 'Message marked as read'}, status=status.HTTP_200_OK)
+
 
 class NotificationViewSet(ModelViewSet):
     serializer_class = NotificationSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering_fields = ['id', 'created_at']
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
     def get_queryset(self):
         if self.request.user.is_staff:
             return Notification.objects.all()
 
         return Notification.objects.filter(recipient=self.request.user)
+
+    @action(detail=True, methods=['patch'])
+    def mark_as_read(self, request, pk=None):
+        notification = self.get_object()
+        if notification.recipient == request.user:
+            if not notification.is_read:
+                notification.is_read = True
+                notification.save()
+            return Response({'status': 'Notification marked as read'}, status=status.HTTP_200_OK)
+        return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
