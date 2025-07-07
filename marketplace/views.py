@@ -1,12 +1,16 @@
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db.models import Prefetch
+from django.contrib.contenttypes.models import ContentType
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.decorators import action
 
-
+from messaging.models import Notification
 from core.pagination import DefaultPagination
 from core.permissions import IsAdminOrReadOnly
 from .serializers import CategorySerializer, ProductSerializer, TagSerializer
@@ -26,6 +30,20 @@ class ProductViewSet(ModelViewSet):
     ordering_fields = ['id', 'title', 'price', 'created_at']
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = DefaultPagination
+
+    @action(detail=True, methods=['post'], url_path='click')
+    def register_click(self, request, pk=None):
+        product = self.get_object()
+        user = request.user if request.user.is_authenticated else None
+
+        Notification.objects.create(
+            recipient=get_user_model().objects.filter(is_staff=True).first(),
+            notification_type=Notification.NOTIFICATION_TYPE_AFFILIATE_CLICKED,
+            message=f"{user.username if user else 'Anonymous'} clicked on {product.title}.",
+            content_type=ContentType.objects.get_for_model(product),
+            object_id=product.id
+        )
+        return Response({'status': 'Click registered'}, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(ModelViewSet):

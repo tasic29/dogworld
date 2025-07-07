@@ -77,7 +77,7 @@ class MessageViewSet(ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         raise MethodNotAllowed("PATCH is not allowed for messages.")
 
-    @action(detail=True, methods=['post', 'get'])
+    @action(detail=True, methods=['post'])
     def mark_as_read(self, request, pk=None):
         message = self.get_object()
 
