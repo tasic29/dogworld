@@ -1,3 +1,5 @@
+from django.contrib.contenttypes.models import ContentType
+from messaging.models import Notification
 from rest_framework import serializers
 from .models import Blog, Post, Tag, Comment, Rating
 
@@ -96,8 +98,23 @@ class CommentSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
-        return Comment.objects.create(**validated_data)
+        author = self.context['user']
+        validated_data['user'] = author
+
+        comment = Comment.objects.create(**validated_data)
+
+        target = validated_data.get('blog') or validated_data.get('post')
+
+        if target and target.author != author:
+            Notification.objects.create(
+                recipient=target.author,
+                notification_type=Notification.NOTIFICATION_TYPE_NEW_COMMENT,
+                message=f"{author.username} commented on your {'blog' if validated_data.get('blog') else 'post'}.",
+                content_type=ContentType.objects.get_for_model(Comment),
+                object_id=comment.id,
+            )
+
+        return comment
 
     class Meta:
         model = Comment
