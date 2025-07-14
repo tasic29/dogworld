@@ -1,10 +1,13 @@
+<template>
+  <div>
+    <Navbar />
+    <RouterView />
+  </div>
+</template>
+
 <script setup>
 import { RouterLink, RouterView } from "vue-router";
-import HomeView from "./views/HomeView.vue";
+import Navbar from "./components/Navbar.vue";
 </script>
-
-<template>
-  <HomeView />
-</template>
 
 <style scoped></style>
