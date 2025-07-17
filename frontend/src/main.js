@@ -17,6 +17,13 @@ pinia.use(piniaPluginPersistedstate);
 
 app.use(pinia);
 app.use(router);
-app.use(Toast);
+app.use(Toast, {
+  position: "bottom-right",
+  timeout: 3000,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  hideProgressBar: false,
+});
 
 app.mount("#app");

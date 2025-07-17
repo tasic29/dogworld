@@ -7,6 +7,10 @@ export const useAuthStore = defineStore("auth", () => {
   const user = ref(null);
   const isLoading = ref(false);
 
+  if (jwtToken.value) {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken.value}`;
+  }
+
   const isAuthenticated = computed(() => !!jwtToken.value);
 
   const setToken = (token) => {
