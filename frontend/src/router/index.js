@@ -4,6 +4,7 @@ import HomeView from "@/views/HomeView.vue";
 import SignUpView from "@/views/SignUpView.vue";
 import LoginView from "@/views/LoginView.vue";
 import AccountView from "@/views/AccountView.vue";
+import BlogDetailView from "@/views/BlogDetailView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,6 +31,11 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
       },
+    },
+    {
+      path: "/blog/:id",
+      name: "blog-detail",
+      component: BlogDetailView,
     },
   ],
 });

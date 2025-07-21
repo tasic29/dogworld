@@ -15,9 +15,12 @@ class TagSerializer(serializers.ModelSerializer):
 class BlogSerializer(serializers.ModelSerializer):
     author = PublicUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
-    total_ratings = serializers.ReadOnlyField()
-    average_rating = serializers.ReadOnlyField()
-    total_comments = serializers.ReadOnlyField()
+    total_ratings = serializers.IntegerField(
+        source='rating_count', read_only=True)
+    average_rating = serializers.FloatField(
+        source='avg_rating', read_only=True)
+    total_comments = serializers.IntegerField(
+        source='comment_count', read_only=True)
 
     class Meta:
         model = Blog

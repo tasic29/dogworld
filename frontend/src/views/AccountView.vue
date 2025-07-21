@@ -81,30 +81,23 @@
             </div>
           </div>
 
-          <!-- Username Field (Read-only display) -->
+          <!-- Username Field -->
           <div class="group">
             <label
               for="username"
               class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
             >
               <span class="mr-2">👤</span>
-              Pack Name (Username)
+              Username
             </label>
             <div class="relative">
               <input
                 v-model="form.username"
                 type="text"
                 id="username"
-                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-100 dark:bg-slate-600 dark:border-slate-500 dark:text-gray-300 cursor-not-allowed"
-                :disabled="true"
+                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-100 dark:bg-slate-600 dark:border-slate-500 dark:text-gray-300"
               />
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                <span class="text-gray-400">🔒</span>
-              </div>
             </div>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Pack names cannot be changed once chosen
-            </p>
           </div>
 
           <!-- Email Field -->
@@ -335,6 +328,7 @@ const updateProfile = async () => {
 
   try {
     const updateData = {
+      username: form.username,
       email: form.email,
       first_name: form.first_name,
       last_name: form.last_name,
