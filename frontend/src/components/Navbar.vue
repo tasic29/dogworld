@@ -1,11 +1,11 @@
 <template>
   <nav
-    class="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100 border-b-4 border-amber-300 py-3 dark:bg-gradient-to-r dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 dark:border-amber-600 transition-all duration-300 shadow-lg"
+    class="sticky top-0 z-50 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100 border-b-4 border-amber-300 dark:bg-gradient-to-r dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 dark:border-amber-600 transition-all duration-300 shadow-lg"
   >
     <div
-      class="flex flex-wrap items-center justify-between max-w-screen-xl px-4 mx-auto"
+      class="max-w-screen-xl mx-auto flex items-center justify-between px-4 py-3"
     >
-      <!-- Logo Section with Paw Prints -->
+      <!-- Logo Section -->
       <router-link :to="{ name: 'home' }" class="flex items-center group">
         <div class="relative">
           <img
@@ -13,7 +13,6 @@
             alt="Dogworld Logo"
             class="h-12 w-auto rounded-full border-2 border-amber-300 group-hover:border-amber-400 transition-all duration-300"
           />
-          <!-- Animated paw print -->
           <div class="absolute -top-1 -right-1 text-amber-600 animate-bounce">
             🐾
           </div>
@@ -23,150 +22,227 @@
         >
           DOGWORLD
         </span>
-        <!-- Floating paw prints -->
         <div class="hidden lg:flex ml-2 space-x-1">
           <span class="text-amber-500 text-sm animate-pulse">🐾</span>
           <span class="text-orange-500 text-xs animate-pulse delay-75">🐾</span>
         </div>
       </router-link>
 
-      <!-- Right side buttons -->
-      <div class="flex items-center lg:order-2">
-        <!-- Sign up button with dog theme -->
-        <router-link
-          :to="{ name: 'signup' }"
-          class="relative overflow-hidden text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 focus:ring-4 focus:ring-amber-300 font-semibold rounded-full text-sm px-6 py-3 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl dark:from-amber-600 dark:to-orange-600 dark:hover:from-amber-700 dark:hover:to-orange-700 dark:focus:ring-amber-500"
-        >
-          <span class="relative z-10 flex items-center">
-            🦴 Join the Pack
-          </span>
-          <!-- Hover effect overlay -->
-          <div
-            class="absolute inset-0 bg-white opacity-0 hover:opacity-10 transition-opacity duration-300"
-          ></div>
-        </router-link>
+      <!-- Desktop Navigation -->
+      <ul class="hidden lg:flex space-x-4 font-medium items-center">
+        <li>
+          <router-link
+            :to="{ name: 'home' }"
+            class="flex items-center text-amber-700 font-semibold hover:text-amber-900 dark:text-amber-300 dark:hover:text-white px-3 py-2 rounded-full transition-all"
+          >
+            📝 Blog
+          </router-link>
+        </li>
+        <li>
+          <a
+            href="#"
+            class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
+          >
+            📸 Posts
+          </a>
+        </li>
+        <li>
+          <a
+            href="#"
+            class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
+          >
+            🛒 Marketplace
+          </a>
+        </li>
+        <li>
+          <a
+            href="#"
+            class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
+          >
+            🐕‍🦺 Services
+          </a>
+        </li>
+      </ul>
 
-        <!-- Mobile menu button -->
-        <button
-          @click="isMobileMenuOpen = !isMobileMenuOpen"
-          type="button"
-          class="inline-flex items-center p-3 ml-3 text-amber-600 rounded-full lg:hidden hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-300 dark:text-amber-300 dark:hover:bg-slate-700 dark:focus:ring-amber-500 transition-all duration-300"
-          aria-controls="mobile-menu-2"
-          :aria-expanded="isMobileMenuOpen.toString()"
-        >
-          <span class="sr-only">Open main menu</span>
-          <!-- Hamburger with dog bone style -->
-          <div class="relative w-6 h-6">
-            <div v-if="!isMobileMenuOpen" class="space-y-1.5">
-              <div class="w-6 h-1 bg-amber-600 rounded-full"></div>
-              <div class="w-6 h-1 bg-amber-600 rounded-full"></div>
-              <div class="w-6 h-1 bg-amber-600 rounded-full"></div>
-            </div>
-            <svg
-              v-else
-              class="w-6 h-6 text-amber-600"
-              fill="currentColor"
-              viewBox="0 0 20 20"
+      <!-- Auth Buttons -->
+      <div class="hidden lg:flex items-center gap-3">
+        <template v-if="!authStore.isAuthenticated">
+          <router-link
+            :to="{ name: 'signup' }"
+            class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-full shadow-lg font-medium transition"
+          >
+            🦴 Join the Pack
+          </router-link>
+          <router-link
+            :to="{ name: 'login' }"
+            class="text-amber-700 font-medium hover:text-amber-900 dark:text-amber-300 dark:hover:text-white transition"
+          >
+            🔐 Login
+          </router-link>
+        </template>
+        <template v-else>
+          <div
+            class="relative"
+            @mouseenter="showDropdown = true"
+            @mouseleave="showDropdown = false"
+          >
+            <button
+              class="text-sm font-medium bg-amber-300 text-amber-900 px-4 py-2 rounded-full hover:bg-amber-400 transition"
             >
-              <path
-                fill-rule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clip-rule="evenodd"
-              />
-            </svg>
+              👤 My Account ▾
+            </button>
+            <div
+              v-if="showDropdown"
+              class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 shadow-lg rounded-lg z-50"
+            >
+              <!-- Invisible bridge to fill the gap -->
+              <div class="absolute -top-2 right-0 w-full h-2"></div>
+
+              <router-link
+                :to="{ name: 'account' }"
+                class="block w-full text-left py-2 px-4 hover:bg-amber-100 dark:hover:bg-slate-700 rounded-md transition"
+              >
+                ⚙️ Profile Settings
+              </router-link>
+              <button
+                @click="logout"
+                class="block w-full text-left py-2 px-4 text-red-600 hover:bg-amber-100 dark:hover:bg-slate-700 rounded-md transition"
+              >
+                🚪 Logout
+              </button>
+            </div>
           </div>
-        </button>
+        </template>
       </div>
 
-      <!-- Navigation menu -->
-      <div
-        :class="[
-          'items-center justify-between w-full lg:flex lg:w-auto lg:order-1 transition-all duration-300',
-          isMobileMenuOpen ? 'block animate-slideDown' : 'hidden',
-        ]"
-        id="mobile-menu-2"
+      <!-- Mobile Menu Button -->
+      <button
+        @click="isMobileMenuOpen = !isMobileMenuOpen"
+        class="lg:hidden text-amber-600 dark:text-amber-300 focus:outline-none"
       >
-        <ul
-          class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-2 lg:mt-0 bg-white lg:bg-transparent rounded-lg lg:rounded-none shadow-lg lg:shadow-none dark:bg-slate-800 lg:dark:bg-transparent"
+        <span class="sr-only">Toggle menu</span>
+        <svg
+          v-if="!isMobileMenuOpen"
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
         >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+        <svg
+          v-else
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Menu Dropdown -->
+    <div v-if="isMobileMenuOpen" class="px-4 pb-4 lg:hidden">
+      <ul class="space-y-2">
+        <li>
+          <router-link
+            :to="{ name: 'home' }"
+            class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
+          >
+            🏠 Blog
+          </router-link>
+        </li>
+        <li>
+          <a
+            href="#"
+            class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
+            >📸 Posts</a
+          >
+        </li>
+        <li>
+          <a
+            href="#"
+            class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
+            >🛒 Marketplace</a
+          >
+        </li>
+        <li>
+          <a
+            href="#"
+            class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
+            >🐕‍🦺 Services</a
+          >
+        </li>
+        <template v-if="!authStore.isAuthenticated">
           <li>
             <router-link
-              :to="{ name: 'home' }"
-              class="flex items-center py-3 px-4 text-amber-700 bg-amber-100 rounded-lg lg:bg-transparent lg:text-amber-600 font-semibold hover:bg-amber-200 lg:hover:bg-amber-100 lg:rounded-full transition-all duration-300 dark:text-amber-300 lg:dark:hover:bg-slate-700"
-              aria-current="page"
+              :to="{ name: 'signup' }"
+              class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
             >
-              🏠 Home
+              🦴 Join the Pack
             </router-link>
           </li>
           <li>
-            <a
-              href="#"
-              class="flex items-center py-3 px-4 text-gray-700 hover:bg-amber-100 lg:hover:bg-amber-100 lg:rounded-full lg:hover:text-amber-700 transition-all duration-300 dark:text-gray-300 dark:hover:bg-slate-700 dark:hover:text-amber-300"
+            <router-link
+              :to="{ name: 'login' }"
+              class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
             >
-              📝 Blog
-            </a>
+              🔐 Login
+            </router-link>
+          </li>
+        </template>
+        <template v-else>
+          <li>
+            <router-link
+              :to="{ name: 'account' }"
+              class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
+            >
+              ⚙️ Profile Settings
+            </router-link>
           </li>
           <li>
-            <a
-              href="#"
-              class="flex items-center py-3 px-4 text-gray-700 hover:bg-amber-100 lg:hover:bg-amber-100 lg:rounded-full lg:hover:text-amber-700 transition-all duration-300 dark:text-gray-300 dark:hover:bg-slate-700 dark:hover:text-amber-300"
+            <button
+              @click="logout"
+              class="block w-full text-left py-2 px-4 text-red-600 hover:bg-amber-100 dark:hover:bg-slate-700 rounded"
             >
-              📸 Posts
-            </a>
+              🚪 Logout
+            </button>
           </li>
-          <li>
-            <a
-              href="#"
-              class="flex items-center py-3 px-4 text-gray-700 hover:bg-amber-100 lg:hover:bg-amber-100 lg:rounded-full lg:hover:text-amber-700 transition-all duration-300 dark:text-gray-300 dark:hover:bg-slate-700 dark:hover:text-amber-300"
-            >
-              🛒 Marketplace
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              class="flex items-center py-3 px-4 text-gray-700 hover:bg-amber-100 lg:hover:bg-amber-100 lg:rounded-full lg:hover:text-amber-700 transition-all duration-300 dark:text-gray-300 dark:hover:bg-slate-700 dark:hover:text-amber-300"
-            >
-              🐕‍🦺 Services
-            </a>
-          </li>
-        </ul>
-      </div>
+        </template>
+      </ul>
     </div>
   </nav>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
+import { useAuthStore } from "../stores/auth";
+import { useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
 import logo from "../assets/logo.webp";
 
 const isMobileMenuOpen = ref(false);
+const showDropdown = ref(false);
+const authStore = useAuthStore();
+const router = useRouter();
+const toast = useToast();
+
+const logout = () => {
+  authStore.logout();
+  toast.success("You’ve been logged out 🐾");
+  router.push("/login");
+};
 </script>
-
-<style scoped>
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-slideDown {
-  animation: slideDown 0.3s ease-out;
-}
-
-/* Custom paw print animation */
-@keyframes pawBounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-</style>

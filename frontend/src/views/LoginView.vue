@@ -27,7 +27,7 @@
             <span class="text-3xl">🏠</span>
           </div>
           <h2
-            class="text-3xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-300 mb-2"
+            class="text-3xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-300 mb-2 animate-bounce delay-100"
           >
             Welcome Back!
           </h2>
@@ -58,9 +58,9 @@
               <div class="absolute inset-y-0 left-0 flex items-center pl-4">
                 <span class="text-amber-500 text-lg">📮</span>
               </div>
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <!-- <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                 <span class="text-amber-400">🐕‍🦺</span>
-              </div>
+              </div> -->
             </div>
           </div>
 
@@ -85,9 +85,9 @@
               <div class="absolute inset-y-0 left-0 flex items-center pl-4">
                 <span class="text-amber-500 text-lg">🔑</span>
               </div>
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <!-- <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                 <span class="text-amber-400">🛡️</span>
-              </div>
+              </div> -->
             </div>
           </div>
 

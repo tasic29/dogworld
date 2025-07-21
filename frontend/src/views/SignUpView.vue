@@ -4,7 +4,7 @@
   >
     <div class="max-w-md mx-auto">
       <!-- Decorative paw prints -->
-      <div class="text-center mb-6">
+      <!-- <div class="text-center mb-6">
         <div class="flex justify-center space-x-2 mb-4">
           <span class="text-amber-400 text-2xl animate-bounce">🐾</span>
           <span class="text-orange-400 text-xl animate-bounce delay-75"
@@ -14,7 +14,7 @@
             >🐾</span
           >
         </div>
-      </div>
+      </div> -->
 
       <div
         class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-amber-200 p-8 dark:bg-slate-800/90 dark:border-slate-700"
@@ -27,13 +27,13 @@
             <span class="text-2xl">🦴</span>
           </div>
           <h2
-            class="text-3xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-300"
+            class="text-3xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-300 animate-bounce delay-100"
           >
             Join the Pack!
           </h2>
-          <p class="text-gray-600 dark:text-gray-300 mt-2">
+          <!-- <p class="text-gray-600 dark:text-gray-300 mt-2">
             Create your DOGWORLD account and start your tail-wagging journey
-          </p>
+          </p> -->
         </div>
 
         <form @submit.prevent="submitForm" class="space-y-6">
@@ -55,9 +55,9 @@
                 placeholder="Choose your pack name..."
                 required
               />
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <!-- <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                 <span class="text-amber-400">🐕</span>
-              </div>
+              </div> -->
             </div>
             <div
               v-if="errors.username"
@@ -86,9 +86,9 @@
                 placeholder="your.email@dogworld.com"
                 required
               />
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <!-- <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                 <span class="text-amber-400">📮</span>
-              </div>
+              </div> -->
             </div>
             <div
               v-if="errors.email"
@@ -117,9 +117,9 @@
                 placeholder="Create a strong password..."
                 required
               />
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <!-- <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                 <span class="text-amber-400">🛡️</span>
-              </div>
+              </div> -->
             </div>
             <div
               v-if="errors.password"
@@ -148,9 +148,9 @@
                 placeholder="Confirm your password..."
                 required
               />
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <!-- <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                 <span class="text-amber-400">✅</span>
-              </div>
+              </div> -->
             </div>
             <div
               v-if="errors.password2"
@@ -221,7 +221,7 @@
               to="/login"
               class="text-amber-600 hover:text-amber-700 font-semibold transition-colors duration-300 dark:text-amber-400 dark:hover:text-amber-300"
             >
-              Sign in here! 🐕‍🦺
+              Login here! 🐕‍🦺
             </router-link>
           </p>
         </div>

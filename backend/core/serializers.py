@@ -5,13 +5,14 @@ from .models import MyUser
 
 class UserCreateSerializer(BaseUserCreateSerializer):
     class Meta(BaseUserCreateSerializer.Meta):
-        fields = ['id', 'username', 'email',
-                  'password', 'first_name', 'last_name']
+        fields = ['id', 'username', 'email', 'password',
+                  'first_name', 'last_name', 'location']
 
 
 class UserSerializer(BaseUserSerializer):
     class Meta(BaseUserSerializer.Meta):
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        fields = ['id', 'username', 'email', 'first_name',
+                  'last_name', 'location', 'date_joined', 'is_active']
 
 
 class PublicUserSerializer(serializers.ModelSerializer):
@@ -19,7 +20,7 @@ class PublicUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MyUser
-        fields = ['id', 'username', 'email', 'full_name']
+        fields = ['id', 'username', 'email', 'full_name', 'location']
 
     def get_full_name(self, obj):
-        return f"{obj.first_name} {obj.last_name}"
+        return f"{obj.first_name} {obj.last_name}".strip()
