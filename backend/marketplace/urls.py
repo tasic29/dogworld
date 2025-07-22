@@ -7,6 +7,6 @@ from .views import ProductViewSet, CategoryViewSet, TagViewSet
 router = DefaultRouter()
 router.register('products', ProductViewSet, basename='product')
 router.register('categories', CategoryViewSet, basename='category')
-router.register('tags', TagViewSet, basename='tag')
+router.register('tags', TagViewSet, basename='marketplace-tag')
 
 urlpatterns = router.urls
