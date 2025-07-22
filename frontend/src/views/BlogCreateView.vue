@@ -117,8 +117,10 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
 
 const router = useRouter();
+const toast = useToast();
 
 // Blog form fields
 const form = ref({
@@ -134,9 +136,7 @@ const tags = ref([]);
 // File input reference
 const fileInput = ref(null);
 
-// Errors/success/loading states
-const error = ref("");
-const success = ref("");
+// Loading state
 const isSubmitting = ref(false);
 
 // Constants
@@ -149,7 +149,7 @@ onMounted(async () => {
     const res = await axios.get("/content/tags/");
     tags.value = res.data;
   } catch (err) {
-    error.value = "Failed to load tags.";
+    toast.error("Failed to load tags. 🐾");
   }
 });
 
@@ -165,20 +165,16 @@ const formatFileSize = (bytes) => {
 // Handle file upload with validation
 const handleImage = (e) => {
   const file = e.target.files[0];
-  error.value = "";
 
   if (file) {
-    // Validate file type
     if (!ALLOWED_TYPES.includes(file.type)) {
-      error.value =
-        "Please select a valid image file (JPEG, PNG, WebP, or GIF).";
+      toast.error("Please select a valid image (JPG, PNG, WebP, GIF). 📷");
       e.target.value = "";
       return;
     }
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      error.value = "Image size must be less than 5MB.";
+      toast.error("Image size must be less than 5MB. 🐘");
       e.target.value = "";
       return;
     }
@@ -190,12 +186,12 @@ const handleImage = (e) => {
 // Validate form
 const validateForm = () => {
   if (!form.value.title.trim()) {
-    error.value = "Title is required.";
+    toast.error("Title is required. ✍️");
     return false;
   }
 
   if (!form.value.content.trim()) {
-    error.value = "Content is required.";
+    toast.error("Content is required. 📖");
     return false;
   }
 
@@ -204,12 +200,7 @@ const validateForm = () => {
 
 // Submit blog
 const submitBlog = async () => {
-  error.value = "";
-  success.value = "";
-
-  if (!validateForm()) {
-    return;
-  }
+  if (!validateForm()) return;
 
   isSubmitting.value = true;
 
@@ -227,7 +218,8 @@ const submitBlog = async () => {
         "Content-Type": "multipart/form-data",
       },
     });
-    success.value = "Blog post created successfully!";
+
+    toast.success("Blog post created successfully! 🐶");
 
     // Reset form
     form.value = {
@@ -240,16 +232,15 @@ const submitBlog = async () => {
       fileInput.value.value = "";
     }
 
-    // Redirect after a short delay
     setTimeout(() => {
       router.push("/blogs");
     }, 2000);
   } catch (err) {
     if (err.response?.data) {
-      const messages = Object.values(err.response.data).flat().join(" ");
-      error.value = messages;
+      const messages = Object.values(err.response.data).flat();
+      messages.forEach((msg) => toast.error(msg + " ❌"));
     } else {
-      error.value = "Something went wrong. Please try again.";
+      toast.error("Something went wrong. Please try again. 🐾");
     }
   } finally {
     isSubmitting.value = false;

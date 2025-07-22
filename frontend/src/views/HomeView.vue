@@ -47,7 +47,8 @@
           <span class="mr-2">📰</span> Latest from the Blog
         </h2>
         <div v-if="blogs.length" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div
+          <router-link
+            :to="`/blog/${blog.id}`"
             v-for="blog in blogs"
             :key="blog.id"
             class="bg-white/80 dark:bg-slate-700 rounded-xl p-6 shadow hover:shadow-lg transition"
@@ -86,7 +87,7 @@
                 Read more →
               </router-link>
             </div>
-          </div>
+          </router-link>
         </div>
         <p v-else class="text-gray-500 dark:text-gray-400">
           No blog posts available yet.

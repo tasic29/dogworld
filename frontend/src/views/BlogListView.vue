@@ -64,7 +64,8 @@
         v-if="blogs.length"
         :class="viewMode === 'grid' ? 'grid md:grid-cols-2 gap-6' : 'space-y-6'"
       >
-        <div
+        <router-link
+          :to="`/blog/${blog.id}`"
           v-for="blog in blogs"
           :key="blog.id"
           class="bg-white/80 dark:bg-slate-800 rounded-xl p-6 shadow hover:shadow-lg transition flex flex-col md:flex-row gap-4"
@@ -93,7 +94,7 @@
               Read more →
             </router-link>
           </div>
-        </div>
+        </router-link>
       </div>
 
       <!-- No Results -->
