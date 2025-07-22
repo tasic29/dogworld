@@ -6,6 +6,8 @@ import LoginView from "@/views/LoginView.vue";
 import AccountView from "@/views/AccountView.vue";
 import BlogDetailView from "@/views/BlogDetailView.vue";
 import BlogListView from "@/views/BlogListView.vue";
+import BlogCreateView from "@/views/BlogCreateView.vue";
+import PostListView from "@/views/PostListView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,9 +41,22 @@ const router = createRouter({
       component: BlogListView,
     },
     {
+      path: "/blog/create",
+      name: "blog-create",
+      component: BlogCreateView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
       path: "/blog/:id",
       name: "blog-detail",
       component: BlogDetailView,
+    },
+    {
+      path: "/posts",
+      name: "posts",
+      component: PostListView,
     },
   ],
 });

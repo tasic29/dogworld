@@ -28,23 +28,34 @@
 
       <!-- Filters -->
       <div class="flex flex-wrap items-center gap-4 mb-6">
+        <!-- Search -->
         <input
           v-model="search"
-          @input="fetchBlogs"
           type="text"
           placeholder="Search blogs..."
           class="px-4 py-2 rounded-lg border border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
 
+        <!-- Tag Filter -->
         <select
           v-model="selectedTag"
-          @change="fetchBlogs"
           class="px-4 py-2 rounded-lg border border-amber-300"
         >
           <option value="">All Tags</option>
           <option v-for="tag in tags" :key="tag.id" :value="tag.name">
             #{{ tag.name }}
           </option>
+        </select>
+
+        <!-- Ordering -->
+        <select
+          v-model="selectedOrdering"
+          class="px-4 py-2 rounded-lg border border-amber-300"
+        >
+          <option value="-created">Newest</option>
+          <option value="created">Oldest</option>
+          <option value="title">Title A–Z</option>
+          <option value="-title">Title Z–A</option>
         </select>
       </div>
 
@@ -85,6 +96,7 @@
         </div>
       </div>
 
+      <!-- No Results -->
       <p v-else class="text-center text-gray-500 dark:text-gray-400">
         No blog posts found.
       </p>
@@ -111,22 +123,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import axios from "axios";
 
+// Reactive state
 const blogs = ref([]);
 const tags = ref([]);
 const search = ref("");
 const selectedTag = ref("");
+const selectedOrdering = ref("-created");
 const viewMode = ref("grid");
 const next = ref(null);
 const previous = ref(null);
 const currentPage = ref(1);
 
+// Classes
 const activeBtnClass = "px-3 py-2 bg-amber-500 text-white rounded-md shadow";
 const inactiveBtnClass =
   "px-3 py-2 bg-white dark:bg-slate-700 border border-amber-300 text-amber-600 dark:text-amber-300 rounded-md";
 
+// Date formatter
 const formatDate = (dateStr) =>
   new Date(dateStr).toLocaleDateString("en-US", {
     year: "numeric",
@@ -134,6 +150,7 @@ const formatDate = (dateStr) =>
     day: "numeric",
   });
 
+// Fetch tags
 const fetchTags = async () => {
   try {
     const res = await axios.get("/content/tags/");
@@ -143,18 +160,20 @@ const fetchTags = async () => {
   }
 };
 
+// Fetch blogs with filtering/search/ordering
 const fetchBlogs = async (page = 1) => {
   try {
-    let url = `/content/blogs/?page=${page}`;
+    const params = {
+      page,
+      search: search.value,
+      ordering: selectedOrdering.value,
+    };
 
-    if (search.value) {
-      url += `&search=${search.value}`;
-    }
     if (selectedTag.value) {
-      url += `&tags__name=${selectedTag.value}`;
+      params["tags__name"] = selectedTag.value;
     }
 
-    const res = await axios.get(url);
+    const res = await axios.get("/content/blogs/", { params });
     blogs.value = res.data.results;
     next.value = res.data.next;
     previous.value = res.data.previous;
@@ -164,16 +183,22 @@ const fetchBlogs = async (page = 1) => {
   }
 };
 
+// Pagination
 const nextPage = () => {
   if (next.value) fetchBlogs(currentPage.value + 1);
 };
-
 const prevPage = () => {
   if (previous.value) fetchBlogs(currentPage.value - 1);
 };
 
+// Initial fetch
 onMounted(() => {
   fetchTags();
   fetchBlogs();
+});
+
+// Watch for changes in filters
+watch([search, selectedTag, selectedOrdering], () => {
+  fetchBlogs(1);
 });
 </script>

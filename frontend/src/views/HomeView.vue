@@ -17,16 +17,24 @@
         </p>
         <div class="mt-6 flex justify-center gap-4">
           <router-link
+            v-if="!authStore.isAuthenticated"
             :to="{ name: 'signup' }"
             class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-full shadow transition"
           >
             Join the Pack
           </router-link>
           <router-link
-            to="/posts"
+            :to="{ name: 'posts' }"
             class="bg-white text-amber-600 border border-amber-500 hover:bg-amber-50 font-bold py-3 px-6 rounded-full shadow transition"
           >
             Explore Posts
+          </router-link>
+          <router-link
+            v-if="isStaff"
+            to="/blog/create"
+            class="bg-white text-amber-600 border border-amber-500 hover:bg-amber-50 font-bold py-3 px-6 rounded-full shadow transition"
+          >
+            📝 Create New Blog Post
           </router-link>
         </div>
       </div>
@@ -86,9 +94,23 @@
         <div class="text-center mt-8">
           <router-link
             to="/blogs"
-            class="inline-block text-orange-600 dark:text-amber-300 font-semibold hover:underline text-lg"
+            class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white dark:bg-amber-600 dark:hover:bg-amber-700 font-bold py-3 px-6 rounded-full shadow transition duration-300 hover:shadow-lg animate-pulse"
           >
-            View all blog posts →
+            <span>View All Blog Posts</span>
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 5l7 7-7 7"
+              ></path>
+            </svg>
           </router-link>
         </div>
       </div>
@@ -127,7 +149,12 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { computed } from "vue";
 import axios from "axios";
+
+const authStore = useAuthStore();
+const isStaff = computed(() => authStore.user?.is_staff);
 
 const blogs = ref([]);
 

@@ -24,7 +24,7 @@ class BlogViewSet(ModelViewSet):
     serializer_class = BlogSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['created', 'updated']
-    search_fields = ['title__icontains', 'content__icontains']
+    search_fields = ['title', 'content']
     ordering_fields = ['id', 'created', 'updated']
     pagination_class = DefaultPagination
 

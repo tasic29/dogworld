@@ -19,7 +19,7 @@ class Blog(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     image = models.ImageField(upload_to='blog_images/', blank=True,
-                              null=True, default='media/blog_images/b_default.webp')
+                              null=True, default='b_default.webp')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     tags = models.ManyToManyField('Tag', blank=True)

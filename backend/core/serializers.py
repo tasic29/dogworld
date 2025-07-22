@@ -12,7 +12,7 @@ class UserCreateSerializer(BaseUserCreateSerializer):
 class UserSerializer(BaseUserSerializer):
     class Meta(BaseUserSerializer.Meta):
         fields = ['id', 'username', 'email', 'first_name',
-                  'last_name', 'location', 'date_joined', 'is_active']
+                  'last_name', 'location', 'date_joined', 'is_active', 'is_staff']
 
 
 class PublicUserSerializer(serializers.ModelSerializer):
