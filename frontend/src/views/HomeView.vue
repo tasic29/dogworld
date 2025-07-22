@@ -85,8 +85,8 @@
         </p>
         <div class="text-center mt-8">
           <router-link
-            to="/blog"
-            class="inline-block text-amber-600 dark:text-amber-300 font-semibold hover:underline"
+            to="/blogs"
+            class="inline-block text-orange-600 dark:text-amber-300 font-semibold hover:underline text-lg"
           >
             View all blog posts →
           </router-link>

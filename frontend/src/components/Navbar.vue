@@ -33,7 +33,15 @@
         <li>
           <router-link
             :to="{ name: 'home' }"
-            class="flex items-center text-amber-700 font-semibold hover:text-amber-900 dark:text-amber-300 dark:hover:text-white px-3 py-2 rounded-full transition-all"
+            class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
+          >
+            🏠 Home
+          </router-link>
+        </li>
+        <li>
+          <router-link
+            :to="{ name: 'blogs' }"
+            class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
           >
             📝 Blog
           </router-link>

@@ -5,6 +5,7 @@ import SignUpView from "@/views/SignUpView.vue";
 import LoginView from "@/views/LoginView.vue";
 import AccountView from "@/views/AccountView.vue";
 import BlogDetailView from "@/views/BlogDetailView.vue";
+import BlogListView from "@/views/BlogListView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,6 +32,11 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
       },
+    },
+    {
+      path: "/blogs",
+      name: "blogs",
+      component: BlogListView,
     },
     {
       path: "/blog/:id",
