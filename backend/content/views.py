@@ -23,7 +23,7 @@ from .models import Blog, Post, Tag, Comment, Rating
 class BlogViewSet(ModelViewSet):
     serializer_class = BlogSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['created', 'updated']
+    filterset_fields = ['created', 'updated', 'tags__name']
     search_fields = ['title', 'content']
     ordering_fields = ['id', 'created', 'updated']
     pagination_class = DefaultPagination
