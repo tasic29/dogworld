@@ -22,7 +22,7 @@
         />
 
         <div class="prose dark:prose-invert max-w-none">
-          <p>{{ blog.content }}</p>
+          <div v-html="renderedContent"></div>
         </div>
 
         <!-- Tags -->
@@ -45,12 +45,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
+import MarkdownIt from "markdown-it";
 
-const blog = ref(null);
 const route = useRoute();
+const blog = ref(null);
+const md = new MarkdownIt();
 
 const formatDate = (date) =>
   new Date(date).toLocaleDateString("en-US", {
@@ -66,5 +68,12 @@ onMounted(async () => {
   } catch (error) {
     console.error("Failed to load blog:", error);
   }
+});
+
+const renderedContent = computed(() => {
+  if (blog.value?.content) {
+    return md.render(blog.value.content);
+  }
+  return "";
 });
 </script>

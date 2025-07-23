@@ -32,7 +32,7 @@
           >
           <textarea
             v-model="form.content"
-            rows="6"
+            rows="15"
             required
             class="w-full px-4 py-2 rounded border border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
           ></textarea>
