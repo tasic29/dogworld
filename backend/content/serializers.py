@@ -51,9 +51,11 @@ class BlogSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     author = PublicUserSerializer(read_only=True)
-    tags = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Tag.objects.all()
+    tags = TagSerializer(many=True, read_only=True)
+    tag_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False
     )
     total_ratings = serializers.ReadOnlyField()
     average_rating = serializers.ReadOnlyField()
@@ -62,24 +64,24 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'author', 'title',  'image', 'caption',
-                  'youtube_url', 'created_at', 'tags', 'total_comments', 'total_ratings', 'average_rating']
+                  'youtube_url', 'created_at', 'tags', 'tag_ids', 'total_comments', 'total_ratings', 'average_rating']
         read_only_fields = ['id', 'author', 'created_at']
 
     def create(self, validated_data):
         author = self.context['author']
-        tags = validated_data.pop('tags', [])
-        post = Post.objects.create(author=author, **validated_data)
-        post.tags.set(tags)
+        tag_ids = validated_data.pop('tag_ids', [])
+        post = Post.objects.create(
+            author=author, tag_ids=tag_ids, **validated_data)
+        if tag_ids:
+            post.tags.set(tag_ids)
         return post
 
     def update(self, instance, validated_data):
-        tags = validated_data.pop('tags', None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        if tags is not None:
-            instance.tags.set(tags)
-        instance.save()
-        return instance
+        tags_ids = validated_data.pop('tags_ids', None)
+        post = super().update(instance, validated_data)
+        if tags_ids is not None:
+            post.tags.set(tags_ids)
+        return post
 
 
 class CommentSerializer(serializers.ModelSerializer):

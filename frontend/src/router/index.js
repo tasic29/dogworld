@@ -8,6 +8,8 @@ import BlogDetailView from "@/views/BlogDetailView.vue";
 import BlogListView from "@/views/BlogListView.vue";
 import BlogCreateView from "@/views/BlogCreateView.vue";
 import PostListView from "@/views/PostListView.vue";
+import PostDetailView from "@/views/PostDetailView.vue";
+import PostCreateView from "@/views/PostCreateView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -57,6 +59,19 @@ const router = createRouter({
       path: "/posts",
       name: "posts",
       component: PostListView,
+    },
+    {
+      path: "/post/create",
+      name: "post-create",
+      component: PostCreateView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: "/post/:id",
+      name: "post-detail",
+      component: PostDetailView,
     },
   ],
 });

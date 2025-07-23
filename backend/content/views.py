@@ -62,9 +62,9 @@ class PostViewSet(ModelViewSet):
     permission_classes = [IsAuthorOrAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['created_at', 'author', 'tags']
-    search_fields = ['caption__icontains', 'tags__name', 'author__username__icontains',
+    search_fields = ['title', 'caption', 'tags__name', 'author__username__icontains',
                      'author__first_name__icontains', 'author__last_name__icontains']
-    ordering_fields = ['id', 'title',  'created_at']
+    ordering_fields = ['id', 'created_at']
     pagination_class = DefaultPagination
 
     def get_queryset(self):

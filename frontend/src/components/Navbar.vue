@@ -47,12 +47,12 @@
           </router-link>
         </li>
         <li>
-          <a
-            href="#"
+          <router-link
+            :to="{ name: 'posts' }"
             class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
           >
             📸 Posts
-          </a>
+          </router-link>
         </li>
         <li>
           <a
