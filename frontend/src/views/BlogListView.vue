@@ -28,7 +28,6 @@
 
       <!-- Filters -->
       <div class="flex flex-wrap items-center gap-4 mb-6">
-        <!-- Search -->
         <input
           v-model="search"
           type="text"
@@ -36,7 +35,6 @@
           class="px-4 py-2 rounded-lg border border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
 
-        <!-- Tag Filter -->
         <select
           v-model="selectedTag"
           class="px-4 py-2 rounded-lg border border-amber-300"
@@ -47,7 +45,6 @@
           </option>
         </select>
 
-        <!-- Ordering -->
         <select
           v-model="selectedOrdering"
           class="px-4 py-2 rounded-lg border border-amber-300"
@@ -65,9 +62,9 @@
         :class="viewMode === 'grid' ? 'grid md:grid-cols-2 gap-6' : 'space-y-6'"
       >
         <router-link
-          :to="`/blog/${blog.id}`"
           v-for="blog in blogs"
           :key="blog.id"
+          :to="`/blog/${blog.id}`"
           class="bg-white/80 dark:bg-slate-800 rounded-xl p-6 shadow hover:shadow-lg transition flex flex-col md:flex-row gap-4"
           :class="viewMode === 'grid' ? '' : 'md:items-center'"
         >
@@ -87,6 +84,18 @@
             <p class="text-sm text-gray-500 dark:text-gray-400">
               By {{ blog.author.username }} • {{ formatDate(blog.created) }}
             </p>
+
+            <!-- Blog-specific tags -->
+            <div v-if="blog.tags?.length" class="mt-2 flex flex-wrap gap-1">
+              <span
+                v-for="tag in blog.tags"
+                :key="tag.id"
+                class="px-2 py-1 text-xs rounded-full bg-amber-100 dark:bg-slate-700 text-amber-700 dark:text-amber-300 font-medium"
+              >
+                #{{ tag.name }}
+              </span>
+            </div>
+
             <router-link
               :to="`/blog/${blog.id}`"
               class="inline-block mt-2 text-amber-600 dark:text-amber-400 hover:underline text-sm"
@@ -151,7 +160,7 @@ const formatDate = (dateStr) =>
     day: "numeric",
   });
 
-// Fetch tags
+// Fetch all available tags
 const fetchTags = async () => {
   try {
     const res = await axios.get("/content/tags/");
@@ -161,7 +170,7 @@ const fetchTags = async () => {
   }
 };
 
-// Fetch blogs with filtering/search/ordering
+// Fetch blogs with filters
 const fetchBlogs = async (page = 1) => {
   try {
     const params = {
@@ -184,7 +193,7 @@ const fetchBlogs = async (page = 1) => {
   }
 };
 
-// Pagination
+// Pagination controls
 const nextPage = () => {
   if (next.value) fetchBlogs(currentPage.value + 1);
 };
@@ -192,13 +201,13 @@ const prevPage = () => {
   if (previous.value) fetchBlogs(currentPage.value - 1);
 };
 
-// Initial fetch
+// Initial load
 onMounted(() => {
   fetchTags();
   fetchBlogs();
 });
 
-// Watch for changes in filters
+// Watch filters and refetch blogs
 watch([search, selectedTag, selectedOrdering], () => {
   fetchBlogs(1);
 });

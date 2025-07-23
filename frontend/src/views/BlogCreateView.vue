@@ -207,7 +207,7 @@ const submitBlog = async () => {
   const formData = new FormData();
   formData.append("title", form.value.title.trim());
   formData.append("content", form.value.content.trim());
-  form.value.tags.forEach((tagId) => formData.append("tags", tagId));
+  form.value.tags.forEach((tagId) => formData.append("tag_ids", tagId));
   if (form.value.image) {
     formData.append("image", form.value.image);
   }

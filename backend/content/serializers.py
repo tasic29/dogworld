@@ -15,6 +15,11 @@ class TagSerializer(serializers.ModelSerializer):
 class BlogSerializer(serializers.ModelSerializer):
     author = PublicUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    tag_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False
+    )
     total_ratings = serializers.IntegerField(
         source='rating_count', read_only=True)
     average_rating = serializers.FloatField(
@@ -25,8 +30,23 @@ class BlogSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blog
         fields = ['id', 'author', 'title', 'content',
-                  'image', 'created', 'updated', 'tags', 'total_comments', 'total_ratings', 'average_rating']
+                  'image', 'created', 'updated', 'tags', 'tag_ids',
+                  'total_comments', 'total_ratings', 'average_rating']
         read_only_fields = ['id', 'author', 'created', 'updated']
+
+    def create(self, validated_data):
+        tag_ids = validated_data.pop('tag_ids', [])
+        blog = Blog.objects.create(**validated_data)
+        if tag_ids:
+            blog.tags.set(tag_ids)
+        return blog
+
+    def update(self, instance, validated_data):
+        tag_ids = validated_data.pop('tag_ids', None)
+        blog = super().update(instance, validated_data)
+        if tag_ids is not None:
+            blog.tags.set(tag_ids)
+        return blog
 
 
 class PostSerializer(serializers.ModelSerializer):

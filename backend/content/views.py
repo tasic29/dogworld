@@ -36,7 +36,7 @@ class BlogViewSet(ModelViewSet):
                 avg_rating=Avg('ratings__score'),
                 rating_count=Count('ratings', distinct=True),
                 comment_count=Count('comments', distinct=True)
-            ).order_by('-created')
+            )
 
         elif self.action == 'retrieve':
             return base_queryset.prefetch_related(
@@ -44,6 +44,7 @@ class BlogViewSet(ModelViewSet):
                 'ratings',
                 'comments__user'
             )
+
         return base_queryset.prefetch_related('tags')
 
     def get_permissions(self):
