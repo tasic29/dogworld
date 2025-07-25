@@ -89,6 +89,14 @@
           </router-link>
         </template>
         <template v-else>
+          <!-- Welcome Message -->
+          <p
+            v-if="authStore.isAuthenticated && authStore.user"
+            class="text-sm font-medium text-amber-700 dark:text-amber-300 mr-2 px-3 py-1 bg-amber-100 dark:bg-slate-700 rounded-full border border-amber-400 dark:border-slate-600"
+          >
+            Welcome, {{ authStore.user.username }}!
+          </p>
+
           <div
             class="relative"
             @mouseenter="showDropdown = true"
@@ -99,6 +107,7 @@
             >
               👤 My Account ▾
             </button>
+
             <div
               v-if="showDropdown"
               class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 shadow-lg rounded-lg z-50"
@@ -164,6 +173,16 @@
 
     <!-- Mobile Menu Dropdown -->
     <div v-if="isMobileMenuOpen" class="px-4 pb-4 lg:hidden">
+      <!-- Mobile Welcome Message -->
+      <div
+        v-if="authStore.isAuthenticated"
+        class="mb-3 px-4 py-2 bg-amber-100 dark:bg-slate-700 rounded-lg border border-amber-200 dark:border-slate-600"
+      >
+        <p class="text-sm font-medium text-amber-700 dark:text-amber-300">
+          🐕 Welcome, {{ authStore.user.username }}!
+        </p>
+      </div>
+
       <ul class="space-y-2">
         <li>
           <router-link
@@ -250,7 +269,7 @@ const toast = useToast();
 
 const logout = () => {
   authStore.logout();
-  toast.success("You’ve been logged out 🐾");
+  toast.success("You've been logged out 🐾");
   router.push("/login");
 };
 </script>

@@ -21,7 +21,7 @@ app.use(pinia);
 app.use(router);
 app.use(Toast, {
   position: "bottom-right",
-  timeout: 4000,
+  timeout: 3000,
   closeOnClick: true,
   pauseOnHover: true,
   draggable: true,
