@@ -117,7 +117,7 @@
           :disabled="isSubmitting"
           class="px-6 py-3 bg-amber-500 text-white font-semibold rounded shadow hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ isSubmitting ? "Submitting..." : "Submit Blog" }}
+          {{ isSubmitting ? "Submitting..." : "Submit Post" }}
         </button>
       </form>
     </div>
@@ -242,7 +242,7 @@ const submitBlog = async () => {
   }
 
   try {
-    await axios.post("/caption/posts/", formData, {
+    await axios.post("/content/posts/", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

@@ -63,24 +63,27 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'author', 'title',  'image', 'caption',
-                  'youtube_url', 'created_at', 'tags', 'tag_ids', 'total_comments', 'total_ratings', 'average_rating']
+        fields = ['id', 'author', 'title', 'image', 'caption',
+                  'youtube_url', 'created_at', 'tags', 'tag_ids',
+                  'total_comments', 'total_ratings', 'average_rating']
         read_only_fields = ['id', 'author', 'created_at']
 
     def create(self, validated_data):
         author = self.context['author']
         tag_ids = validated_data.pop('tag_ids', [])
-        post = Post.objects.create(
-            author=author, tag_ids=tag_ids, **validated_data)
+
+        post = Post.objects.create(author=author, **validated_data)
+
         if tag_ids:
             post.tags.set(tag_ids)
+
         return post
 
     def update(self, instance, validated_data):
-        tags_ids = validated_data.pop('tags_ids', None)
+        tag_ids = validated_data.pop('tag_ids', None)
         post = super().update(instance, validated_data)
-        if tags_ids is not None:
-            post.tags.set(tags_ids)
+        if tag_ids is not None:
+            post.tags.set(tag_ids)
         return post
 
 

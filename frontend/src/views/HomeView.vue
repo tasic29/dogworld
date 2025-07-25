@@ -47,7 +47,7 @@
       </div>
 
       <!-- Featured Blog Posts -->
-      <div class="mb-16">
+      <div class="mb-16 animate-jump-in">
         <h2
           class="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center"
         >
