@@ -128,21 +128,22 @@ class CommentSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         author = self.context['user']
         validated_data['user'] = author
+        return Comment.objects.create(**validated_data)
 
-        comment = Comment.objects.create(**validated_data)
+        # comment = Comment.objects.create(**validated_data)
 
-        target = validated_data.get('blog') or validated_data.get('post')
+        # target = validated_data.get('blog') or validated_data.get('post')
 
-        if target and target.author != author:
-            Notification.objects.create(
-                recipient=target.author,
-                notification_type=Notification.NOTIFICATION_TYPE_NEW_COMMENT,
-                message=f"{author.username} commented on your {'blog' if validated_data.get('blog') else 'post'}.",
-                content_type=ContentType.objects.get_for_model(Comment),
-                object_id=comment.id,
-            )
+        # if target and target.author != author:
+        #     Notification.objects.create(
+        #         recipient=target.author,
+        #         notification_type=Notification.NOTIFICATION_TYPE_NEW_COMMENT,
+        #         message=f"{author.username} commented on your {'blog' if validated_data.get('blog') else 'post'}.",
+        #         content_type=ContentType.objects.get_for_model(Comment),
+        #         object_id=comment.id,
+        #     )
 
-        return comment
+        # return comment
 
     class Meta:
         model = Comment
