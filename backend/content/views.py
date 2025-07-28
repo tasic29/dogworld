@@ -90,6 +90,17 @@ class PostViewSet(ModelViewSet):
         context['author'] = self.request.user
         return context
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        if request.data.get('remove_image') == 'true':
+            instance.image.delete(save=False)
+            instance.image = None
+            instance.save()
+
+        return super().update(request, *args, **kwargs)
+
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer

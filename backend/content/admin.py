@@ -35,7 +35,8 @@ class BlogAdmin(admin.ModelAdmin):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ['id', 'image', 'title', 'author', 'caption', 'created_at']
+    list_display = ['id', 'thumbnail', 'title',
+                    'author', 'created_at', 'comment_count', 'rating_count', 'average_rating']
     autocomplete_fields = ['author']
     list_per_page = 10
     list_filter = ['created_at', 'tags']

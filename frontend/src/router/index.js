@@ -10,6 +10,7 @@ import BlogCreateView from "@/views/BlogCreateView.vue";
 import PostListView from "@/views/PostListView.vue";
 import PostDetailView from "@/views/PostDetailView.vue";
 import PostCreateView from "@/views/PostCreateView.vue";
+import PostUpdateView from "@/views/PostUpdateView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -64,6 +65,14 @@ const router = createRouter({
       path: "/post/create",
       name: "post-create",
       component: PostCreateView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: "/post/:id/edit",
+      name: "post-edit",
+      component: PostUpdateView,
       meta: {
         requiresAuth: true,
       },
