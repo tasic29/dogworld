@@ -108,10 +108,12 @@
       @confirm="onDeleteConfirmed"
       @cancel="showConfirmDialog = false"
     />
+    <CommentComponent type="post" />
   </div>
 </template>
 
 <script setup>
+import CommentComponent from "../components/CommentComponent.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";

@@ -18,7 +18,7 @@
           </div>
         </div>
         <span
-          class="ml-3 text-2xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-300 hover:scale-105 transition-transform duration-300"
+          class="ml-3 text-2xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-300 hover:scale-105 hover:from-amber-600 hover:to-orange-500 transition-all duration-300 ease-in-out"
         >
           DOGWORLD
         </span>
