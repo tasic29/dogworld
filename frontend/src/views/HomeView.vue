@@ -25,21 +25,21 @@
           </router-link>
           <router-link
             :to="{ name: 'posts' }"
-            class="bg-white text-amber-600 border border-amber-500 hover:bg-amber-50 font-bold py-3 px-6 rounded-full shadow transition"
+            class="bg-white text-amber-600 border border-amber-500 hover:bg-amber-100 font-bold py-3 px-6 rounded-full shadow transition"
           >
             Explore Posts
           </router-link>
           <router-link
             v-if="authStore.isAuthenticated"
             :to="{ name: 'post-create' }"
-            class="bg-white text-amber-600 border border-amber-500 hover:bg-amber-50 font-bold py-3 px-6 rounded-full shadow transition"
+            class="bg-white text-amber-600 border border-amber-500 hover:bg-amber-100 font-bold py-3 px-6 rounded-full shadow transition"
           >
             Create Post
           </router-link>
           <router-link
             v-if="isStaff"
             to="/blog/create"
-            class="bg-white text-amber-600 border border-amber-500 hover:bg-amber-50 font-bold py-3 px-6 rounded-full shadow transition"
+            class="bg-white text-amber-600 border border-amber-500 hover:bg-amber-100 font-bold py-3 px-6 rounded-full shadow transition"
           >
             📝 Create New Blog Post
           </router-link>

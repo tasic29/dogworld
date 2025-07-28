@@ -18,8 +18,10 @@ class Blog(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     content = models.TextField()
-    image = models.ImageField(upload_to='blog_images/', blank=True,
-                              null=True, default='b_default.webp')
+    image = models.ImageField(upload_to='blog_images/',
+                              blank=True,
+                              null=True,
+                              default='blog_images/b_default.webp')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     tags = models.ManyToManyField('Tag', blank=True)
@@ -50,7 +52,10 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     image = models.ImageField(
         upload_to='post_images/',
-        blank=True, null=True)
+        blank=True,
+        null=True,
+        default='post_images/default.webp'
+    )
     caption = models.TextField(max_length=1000, blank=True)
     youtube_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
