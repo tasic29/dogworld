@@ -3,7 +3,7 @@
     <div
       class="bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow p-8 max-w-4xl mx-auto"
     >
-      <h2 class="text-2xl font-bold text-amber-700 dark:text-amber-300 mb-6">
+      <h2 class="text-lg font-bold text-amber-700 dark:text-amber-300 mb-6">
         Comments ({{ comments.length }})
       </h2>
 
@@ -27,12 +27,12 @@
       </div>
 
       <!-- Comment List -->
-      <div v-if="comments.length" class="space-y-6">
+      <div v-if="comments.length" class="space-y-4">
         <div
           v-for="comment in comments"
           :id="`comment-${comment.id}`"
           :key="comment.id"
-          class="relative p-6 rounded-2xl bg-amber-50 dark:bg-slate-700/70 shadow-sm"
+          class="relative p-4 rounded-3xl bg-amber-50 dark:bg-slate-700/70 shadow-xl"
         >
           <!-- User & Date -->
           <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
@@ -84,7 +84,7 @@
             </button>
             <button
               class="text-red-500 hover:underline font-medium"
-              @click="deleteComment(comment.id)"
+              @click="confirmDelete(comment.id)"
             >
               Delete
             </button>
@@ -100,6 +100,22 @@
         No comments yet. Be the first to leave a thought 🐾
       </p>
     </div>
+
+    <!-- Confirm Dialog -->
+    <ConfirmDialog
+      v-if="showConfirmDialog"
+      title="Delete Comment"
+      message="Are you sure you want to delete this comment? 🐾"
+      confirmText="Yes, delete it"
+      cancelText="Cancel"
+      @confirm="deleteComment"
+      @cancel="
+        () => {
+          showConfirmDialog = false;
+          commentToDelete = null;
+        }
+      "
+    />
   </section>
 </template>
 
@@ -109,6 +125,7 @@ import axios from "axios";
 import { useRoute } from "vue-router";
 import { useToast } from "vue-toastification";
 import { useAuthStore } from "@/stores/auth";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
 
 const props = defineProps({
   type: { type: String, required: true }, // 'blog' or 'post'
@@ -124,6 +141,9 @@ const isSubmitting = ref(false);
 
 const editingCommentId = ref(null);
 const editContent = ref("");
+
+const showConfirmDialog = ref(false);
+const commentToDelete = ref(null);
 
 const objectId = route.params.id;
 
@@ -193,15 +213,26 @@ const updateComment = async (id) => {
   }
 };
 
-// Delete comment
-const deleteComment = async (id) => {
-  if (!confirm("Are you sure you want to delete this comment?")) return;
+// Ask before delete
+const confirmDelete = (id) => {
+  commentToDelete.value = id;
+  showConfirmDialog.value = true;
+};
+
+// Perform delete
+const deleteComment = async () => {
+  if (!commentToDelete.value) return;
   try {
-    await axios.delete(`/content/${props.type}s/${objectId}/comments/${id}/`);
+    await axios.delete(
+      `/content/${props.type}s/${objectId}/comments/${commentToDelete.value}/`
+    );
     toast.success("Comment deleted!");
     await fetchComments();
   } catch (err) {
     toast.error("Failed to delete comment.");
+  } finally {
+    showConfirmDialog.value = false;
+    commentToDelete.value = null;
   }
 };
 

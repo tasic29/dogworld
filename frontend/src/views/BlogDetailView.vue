@@ -1,10 +1,11 @@
 <template>
-  <div>
-    <section
-      class="min-h-screen bg-gradient-to-b from-orange-50 to-amber-100 dark:from-slate-900 dark:to-slate-800 py-12 px-4"
-    >
+  <section
+    class="min-h-screen bg-gradient-to-b from-orange-50 to-amber-100 dark:from-slate-900 dark:to-slate-800 py-12 px-4"
+  >
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Main Blog Content -->
       <div
-        class="max-w-4xl mx-auto bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow p-8"
+        class="lg:col-span-2 bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow p-8"
       >
         <div v-if="blog" class="space-y-6">
           <h1 class="text-3xl font-bold text-amber-700 dark:text-amber-300">
@@ -22,6 +23,7 @@
           <div class="prose dark:prose-invert max-w-none">
             <div v-html="renderedContent"></div>
           </div>
+
           <!-- Tags -->
           <div v-if="blog.tags.length" class="flex flex-wrap gap-2 mt-6">
             <span
@@ -37,13 +39,18 @@
           Loading blog post...
         </div>
       </div>
-    </section>
-    <CommentComponent type="blog" />
-  </div>
+
+      <!-- Sidebar: Comments -->
+      <aside>
+        <CommentComponent type="blog" />
+      </aside>
+    </div>
+  </section>
 </template>
 
 <script setup>
 import CommentComponent from "../components/CommentComponent.vue";
+import ConfirmDialog from "../components/ConfirmDialog.vue";
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
@@ -52,6 +59,7 @@ import MarkdownIt from "markdown-it";
 const route = useRoute();
 const blog = ref(null);
 const md = new MarkdownIt();
+const showConfirmDialog = ref(false);
 
 const formatDate = (date) =>
   new Date(date).toLocaleDateString("en-US", {
@@ -70,9 +78,10 @@ onMounted(async () => {
 });
 
 const renderedContent = computed(() => {
-  if (blog.value?.content) {
-    return md.render(blog.value.content);
-  }
-  return "";
+  return blog.value?.content ? md.render(blog.value.content) : "";
 });
+
+const confirmDelete = () => {
+  showConfirmDialog.value = true;
+};
 </script>
