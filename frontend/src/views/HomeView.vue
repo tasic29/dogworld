@@ -5,7 +5,7 @@
   >
     <div class="max-w-5xl mx-auto">
       <!-- Hero Section -->
-      <div class="text-center mb-16">
+      <div class="text-center mb-12">
         <h1
           class="text-4xl md:text-5xl font-extrabold text-amber-700 dark:text-amber-300 mb-4"
         >

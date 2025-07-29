@@ -129,6 +129,46 @@
               </button>
             </div>
           </div>
+
+          <!-- Notification Bell -->
+          <div class="relative mr-3" ref="notifRef">
+            <button
+              class="text-xl relative text-amber-700 dark:text-amber-300"
+              @click="showNotifDropdown = !showNotifDropdown"
+            >
+              🔔
+              <span
+                v-if="notifications.length"
+                class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1"
+              >
+                {{ notifications.length }}
+              </span>
+            </button>
+
+            <!-- Dropdown -->
+            <div
+              v-if="showNotifDropdown"
+              class="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 shadow-xl rounded-lg z-50 border border-amber-200 dark:border-slate-700 max-h-96 overflow-y-auto"
+            >
+              <p
+                v-if="!notifications.length"
+                class="p-4 text-gray-600 dark:text-gray-300 text-sm text-center"
+              >
+                No new notifications
+              </p>
+
+              <ul v-else>
+                <li
+                  v-for="notif in notifications"
+                  :key="notif.id"
+                  @click="handleNotificationClick(notif)"
+                  class="px-4 py-2 hover:bg-amber-100 dark:hover:bg-slate-700 cursor-pointer text-sm border-b dark:border-slate-600"
+                >
+                  {{ notif.message }}
+                </li>
+              </ul>
+            </div>
+          </div>
         </template>
       </div>
 
@@ -189,14 +229,22 @@
             :to="{ name: 'home' }"
             class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
           >
-            🏠 Blog
+            🏠 Home
           </router-link>
         </li>
         <li>
-          <a
-            href="#"
+          <router-link
+            :to="{ name: 'blogs' }"
             class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
-            >📸 Posts</a
+          >
+            📝 Blog
+          </router-link>
+        </li>
+        <li>
+          <router-link
+            :to="{ name: 'posts' }"
+            class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
+            >📸 Posts</router-link
           >
         </li>
         <li>
@@ -255,17 +303,79 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 import logo from "../assets/logo.webp";
+import axios from "axios";
 
 const isMobileMenuOpen = ref(false);
 const showDropdown = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
+
+const notifications = ref([]);
+const showNotifDropdown = ref(false);
+const notifRef = ref(null);
+
+const fetchNotifications = async () => {
+  try {
+    const response = await axios.get("/messaging/notifications/");
+    notifications.value = response.data.filter((n) => !n.is_read);
+  } catch (error) {
+    toast.error("Failed to fetch notifications");
+  }
+};
+
+const markAsRead = async (id) => {
+  try {
+    await axios.patch(`/messaging/notifications/${id}/mark_as_read/`);
+    notifications.value = notifications.value.filter((n) => n.id !== id);
+  } catch (err) {
+    toast.error("Failed to mark notification as read");
+  }
+};
+
+const handleNotificationClick = async (notif) => {
+  try {
+    await markAsRead(notif.id);
+    if (notif.target_url) {
+      router.push(notif.target_url);
+    } else {
+      toast.info("This notification has no link.");
+    }
+  } catch (err) {
+    toast.error("Failed to open notification");
+  }
+};
+
+const handleClickOutside = (e) => {
+  if (notifRef.value && !notifRef.value.contains(e.target)) {
+    showNotifDropdown.value = false;
+  }
+};
+
+onMounted(() => {
+  if (authStore.isAuthenticated) {
+    fetchNotifications();
+  }
+  const hash = window.location.hash;
+  if (hash && hash.startsWith("#comment-")) {
+    const el = document.querySelector(hash);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("bg-yellow-100", "transition", "duration-500");
+      setTimeout(() => el.classList.remove("bg-yellow-100"), 2000);
+    }
+  }
+  document.addEventListener("click", handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
 
 const logout = () => {
   authStore.logout();

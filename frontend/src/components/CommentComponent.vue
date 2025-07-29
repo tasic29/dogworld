@@ -30,6 +30,7 @@
       <div v-if="comments.length" class="space-y-6">
         <div
           v-for="comment in comments"
+          :id="`comment-${comment.id}`"
           :key="comment.id"
           class="relative p-6 rounded-2xl bg-amber-50 dark:bg-slate-700/70 shadow-sm"
         >

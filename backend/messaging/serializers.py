@@ -38,11 +38,11 @@ class MessageSerializer(serializers.ModelSerializer):
         return message
 
 
-class NotificationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Notification
-        fields = ['id', 'recipient', 'notification_type', 'message', 'is_read']
-        read_only_fields = ['recipient', 'notification_type', 'message']
+# class NotificationSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Notification
+#         fields = ['id', 'recipient', 'notification_type', 'message', 'is_read']
+#         read_only_fields = ['recipient', 'notification_type', 'message']
 
     # def update(self, instance, validated_data):
     #     user = self.context['request'].user
@@ -55,3 +55,21 @@ class NotificationSerializer(serializers.ModelSerializer):
     #         instance.is_read = validated_data['is_read']
     #         instance.save()
     #     return instance
+class NotificationSerializer(serializers.ModelSerializer):
+    target_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Notification
+        fields = [
+            'id', 'recipient', 'notification_type', 'message',
+            'is_read', 'target_url'
+        ]
+        read_only_fields = ['recipient', 'notification_type', 'message']
+
+    def get_target_url(self, obj):
+        comment = obj.content_object
+        if hasattr(comment, 'blog') and comment.blog:
+            return f"/blog/{comment.blog.id}/#comment-{comment.id}"
+        elif hasattr(comment, 'post') and comment.post:
+            return f"/post/{comment.post.id}/#comment-{comment.id}"
+        return "/"
