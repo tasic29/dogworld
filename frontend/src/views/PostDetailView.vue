@@ -1,10 +1,11 @@
 <template>
-  <div>
-    <section
-      class="min-h-screen bg-gradient-to-b from-orange-50 to-amber-100 dark:from-slate-900 dark:to-slate-800 py-12 px-4"
-    >
+  <section
+    class="min-h-screen bg-gradient-to-b from-orange-50 to-amber-100 dark:from-slate-900 dark:to-slate-800 py-12 px-4"
+  >
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Main Post Content -->
       <div
-        class="max-w-4xl mx-auto bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow p-8"
+        class="lg:col-span-2 bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow p-8"
       >
         <div v-if="post" class="space-y-6">
           <h1 class="text-3xl font-bold text-amber-700 dark:text-amber-300">
@@ -19,10 +20,12 @@
             alt="post image"
             class="rounded-lg w-full object-cover max-h-[500px] shadow"
           />
+
           <!-- Caption -->
           <div class="prose dark:prose-invert max-w-none">
             <div v-html="renderedCaption"></div>
           </div>
+
           <!-- YouTube Lazy Video -->
           <div v-if="youtubeVideoId" class="relative mt-6">
             <div
@@ -43,13 +46,7 @@
                   fill="currentColor"
                   viewBox="0 0 84 84"
                 >
-                  <circle
-                    cx="42"
-                    cy="42"
-                    r="42"
-                    fill="currentColor"
-                    opacity="0.6"
-                  />
+                  <circle cx="42" cy="42" r="42" opacity="0.6" />
                   <polygon points="33,26 61,42 33,58" fill="white" />
                 </svg>
               </div>
@@ -65,6 +62,7 @@
               ></iframe>
             </div>
           </div>
+
           <!-- Tags -->
           <div v-if="post.tags.length" class="flex flex-wrap gap-2 mt-6">
             <span
@@ -75,17 +73,15 @@
               #{{ tag.name }}
             </span>
           </div>
-          <!-- Edit Button -->
-          <div v-if="canEdit" class="mt-6 text-right">
+
+          <!-- Edit/Delete Buttons -->
+          <div v-if="canEdit" class="mt-6 flex justify-end gap-4">
             <button
               @click="goToEdit"
               class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded shadow transition"
             >
               ✏️ Edit Post
             </button>
-          </div>
-          <!-- Delete Button -->
-          <div v-if="canEdit" class="mt-6 text-right">
             <button
               @click="confirmDelete"
               class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
@@ -94,11 +90,19 @@
             </button>
           </div>
         </div>
+
         <div v-else class="text-center text-gray-500 dark:text-gray-300">
           Loading post...
         </div>
       </div>
-    </section>
+
+      <!-- Sidebar: Comments -->
+      <aside>
+        <CommentComponent type="post" />
+      </aside>
+    </div>
+
+    <!-- Delete Confirm Dialog -->
     <ConfirmDialog
       v-if="showConfirmDialog"
       title="Delete Post"
@@ -108,8 +112,7 @@
       @confirm="onDeleteConfirmed"
       @cancel="showConfirmDialog = false"
     />
-    <CommentComponent type="post" />
-  </div>
+  </section>
 </template>
 
 <script setup>
@@ -133,7 +136,6 @@ const md = new MarkdownIt();
 const showIframe = ref(false);
 const showConfirmDialog = ref(false);
 
-// Format date
 const formatDate = (date) =>
   new Date(date).toLocaleDateString("en-US", {
     year: "numeric",
@@ -141,50 +143,39 @@ const formatDate = (date) =>
     day: "numeric",
   });
 
-// Fetch post on mount
 onMounted(async () => {
   try {
-    const response = await axios.get(`/content/posts/${route.params.id}/`);
+    const response = await axios.get(`/content/posts/${postId}/`);
     post.value = response.data;
   } catch (error) {
     console.error("Failed to load post:", error);
   }
 });
 
-// Render markdown
 const renderedCaption = computed(() => {
   return post.value?.caption ? md.render(post.value.caption) : "";
 });
 
-// YouTube video ID
 const youtubeVideoId = computed(() => {
   const url = post.value?.youtube_url;
   if (!url) return null;
-
   try {
     const parsed = new URL(url);
     const hostname = parsed.hostname;
-
-    if (hostname.includes("youtube.com")) {
-      return parsed.searchParams.get("v");
-    } else if (hostname === "youtu.be") {
-      return parsed.pathname.slice(1);
-    }
-
+    if (hostname.includes("youtube.com")) return parsed.searchParams.get("v");
+    if (hostname === "youtu.be") return parsed.pathname.slice(1);
     return null;
   } catch {
     return null;
   }
 });
 
-// YouTube thumbnail URL
 const youtubeThumbnailUrl = computed(() => {
   return youtubeVideoId.value
     ? `https://img.youtube.com/vi/${youtubeVideoId.value}/hqdefault.jpg`
     : null;
 });
 
-// Check if current user is author or staff
 const canEdit = computed(() => {
   const currentUser = auth.user;
   return (
@@ -193,14 +184,11 @@ const canEdit = computed(() => {
   );
 });
 
-// Navigate to edit page
 const goToEdit = () => {
   if (post.value?.id) {
     router.push({ name: "post-edit", params: { id: post.value.id } });
   }
 };
-
-// Delete post
 
 const confirmDelete = () => {
   showConfirmDialog.value = true;
