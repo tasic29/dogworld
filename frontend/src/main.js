@@ -25,7 +25,8 @@ app.use(Toast, {
   closeOnClick: true,
   pauseOnHover: true,
   draggable: true,
-  hideProgressBar: false,
+  hideProgressBar: true,
+  icon: true,
 });
 
 app.mount("#app");

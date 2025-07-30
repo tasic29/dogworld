@@ -65,7 +65,7 @@
           v-for="post in posts"
           :key="post.id"
           :to="`/post/${post.id}`"
-          class="bg-white/80 dark:bg-slate-800 rounded-xl p-6 shadow hover:shadow-lg transition flex flex-col md:flex-row gap-4"
+          class="bg-white/80 dark:bg-slate-800 rounded-xl p-6 shadow-lg hover:shadow-2xl transition flex flex-col md:flex-row gap-4"
           :class="viewMode === 'grid' ? '' : 'md:items-center'"
         >
           <img

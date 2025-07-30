@@ -334,6 +334,7 @@ const markAsRead = async (id) => {
     await axios.patch(`/messaging/notifications/${id}/mark_as_read/`);
     notifications.value = notifications.value.filter((n) => n.id !== id);
   } catch (err) {
+    console.error("Error marking notification:", err.response);
     toast.error("Failed to mark notification as read");
   }
 };

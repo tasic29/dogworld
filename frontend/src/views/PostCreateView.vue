@@ -3,7 +3,7 @@
     class="min-h-screen bg-gradient-to-b from-orange-50 to-amber-100 dark:from-slate-900 dark:to-slate-800 py-12 px-4"
   >
     <div
-      class="max-w-3xl mx-auto bg-white dark:bg-slate-800 p-8 rounded-lg shadow"
+      class="max-w-3xl mx-auto bg-white dark:bg-slate-800 p-8 rounded-lg shadow-lg hover:shadow-2xl transition"
     >
       <h1 class="text-3xl font-bold text-amber-700 dark:text-amber-300 mb-6">
         Create New Post

@@ -1,7 +1,7 @@
 <template>
   <section class="mt-2">
     <div
-      class="bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow p-8 max-w-4xl mx-auto"
+      class="bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow-lg hover:shadow-2xl transition p-8 max-w-4xl mx-auto"
     >
       <h2 class="text-lg font-bold text-amber-700 dark:text-amber-300 mb-6">
         Comments ({{ comments.length }})
@@ -32,7 +32,7 @@
           v-for="comment in comments"
           :id="`comment-${comment.id}`"
           :key="comment.id"
-          class="relative p-4 rounded-3xl bg-amber-50 dark:bg-slate-700/70 shadow-xl"
+          class="relative p-4 rounded-3xl bg-amber-50 dark:bg-slate-700/70 shadow-lg"
         >
           <!-- User & Date -->
           <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
@@ -226,7 +226,9 @@ const deleteComment = async () => {
     await axios.delete(
       `/content/${props.type}s/${objectId}/comments/${commentToDelete.value}/`
     );
-    toast.success("Comment deleted!");
+    // toast.error("Comment deleted!");
+    toast.info("Comment deleted.");
+
     await fetchComments();
   } catch (err) {
     toast.error("Failed to delete comment.");

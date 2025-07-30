@@ -5,7 +5,7 @@
     <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Main Blog Content -->
       <div
-        class="lg:col-span-2 bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow p-8"
+        class="lg:col-span-2 bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow-lg hover:shadow-2xl transition p-8"
       >
         <div v-if="blog" class="space-y-6">
           <h1 class="text-3xl font-bold text-amber-700 dark:text-amber-300">

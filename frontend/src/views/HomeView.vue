@@ -5,7 +5,7 @@
   >
     <div class="max-w-5xl mx-auto">
       <!-- Hero Section -->
-      <div class="text-center mb-12">
+      <div class="text-center mb-10">
         <h1
           class="text-4xl md:text-5xl font-extrabold text-amber-700 dark:text-amber-300 mb-4"
         >
@@ -49,7 +49,7 @@
       <!-- Featured Blog Posts -->
       <div class="mb-16 animate-jump-in">
         <h2
-          class="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center"
+          class="text-2xl font-bold text-gray-700 dark:text-white mb-6 flex items-center"
         >
           <span class="mr-2">📰</span> Latest from the Blog
         </h2>
@@ -58,7 +58,7 @@
             :to="`/blog/${blog.id}`"
             v-for="blog in blogs"
             :key="blog.id"
-            class="bg-white/80 dark:bg-slate-700 rounded-xl p-6 shadow hover:shadow-lg transition"
+            class="bg-white/80 dark:bg-slate-700 rounded-xl p-6 shadow-lg hover:shadow-2xl transition"
           >
             <img
               v-if="blog.image"
@@ -102,7 +102,7 @@
         <div class="text-center mt-8">
           <router-link
             to="/blogs"
-            class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white dark:bg-amber-600 dark:hover:bg-amber-700 font-bold py-3 px-6 rounded-full shadow transition duration-300 hover:shadow-lg animate-pulse"
+            class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white dark:bg-amber-600 dark:hover:bg-amber-700 font-bold py-3 px-6 rounded-full shadow transition duration-300 hover:shadow-lg"
           >
             <span>View All Blog Posts</span>
             <svg
