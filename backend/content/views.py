@@ -9,7 +9,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet
 
 from core.pagination import DefaultPagination
-from .permissions import IsAuthorOrAdminOrReadOnly
+from .permissions import IsAuthorOrAdminOrReadOnly, IsAdminOrReadOnly
 
 
 from .serializers import (BlogSerializer,
@@ -27,16 +27,13 @@ class BlogViewSet(ModelViewSet):
     search_fields = ['title', 'content']
     ordering_fields = ['id', 'created', 'updated']
     pagination_class = DefaultPagination
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
-        base_queryset = Blog.objects.select_related('author')
+        base_queryset = Blog.objects.all()
 
         if self.action == 'list':
-            return base_queryset.prefetch_related('tags').annotate(
-                avg_rating=Avg('ratings__score'),
-                rating_count=Count('ratings', distinct=True),
-                comment_count=Count('comments', distinct=True)
-            )
+            return base_queryset.prefetch_related('tags')
 
         elif self.action == 'retrieve':
             return base_queryset.prefetch_related(
@@ -44,14 +41,7 @@ class BlogViewSet(ModelViewSet):
                 'ratings',
                 'comments__user'
             )
-
         return base_queryset.prefetch_related('tags')
-
-    def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            if not self.request.user.is_staff:
-                self.permission_denied(self.request, message="Admins only.")
-        return super().get_permissions()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -68,14 +58,10 @@ class PostViewSet(ModelViewSet):
     pagination_class = DefaultPagination
 
     def get_queryset(self):
-        base_queryset = Post.objects.select_related('author')
+        base_queryset = Post.objects.all()
 
         if self.action == 'list':
-            return base_queryset.prefetch_related('tags').annotate(
-                avg_rating=Avg('ratings__score'),
-                rating_count=Count('ratings', distinct=True),
-                comment_count=Count('comments', distinct=True)
-            ).order_by('-created_at')
+            return base_queryset.prefetch_related('tags').order_by('-created_at')
 
         elif self.action == 'retrieve':
             return base_queryset.prefetch_related(

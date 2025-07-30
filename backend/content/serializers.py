@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from messaging.models import Notification
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from .models import Blog, Post, Tag, Comment, Rating
 
@@ -57,9 +58,12 @@ class PostSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
-    total_ratings = serializers.ReadOnlyField()
-    average_rating = serializers.ReadOnlyField()
-    total_comments = serializers.ReadOnlyField()
+    total_ratings = serializers.IntegerField(
+        source='rating_count', read_only=True)
+    average_rating = serializers.FloatField(
+        source='avg_rating', read_only=True)
+    total_comments = serializers.IntegerField(
+        source='comment_count', read_only=True)
 
     class Meta:
         model = Post
@@ -130,21 +134,6 @@ class CommentSerializer(serializers.ModelSerializer):
         validated_data['user'] = author
         return Comment.objects.create(**validated_data)
 
-        # comment = Comment.objects.create(**validated_data)
-
-        # target = validated_data.get('blog') or validated_data.get('post')
-
-        # if target and target.author != author:
-        #     Notification.objects.create(
-        #         recipient=target.author,
-        #         notification_type=Notification.NOTIFICATION_TYPE_NEW_COMMENT,
-        #         message=f"{author.username} commented on your {'blog' if validated_data.get('blog') else 'post'}.",
-        #         content_type=ContentType.objects.get_for_model(Comment),
-        #         object_id=comment.id,
-        #     )
-
-        # return comment
-
     class Meta:
         model = Comment
         fields = [
@@ -166,34 +155,31 @@ class RatingSerializer(serializers.ModelSerializer):
     post_id = serializers.IntegerField(source='post.id', read_only=True)
 
     def validate(self, data):
-
-        request = self.context.get('request')
+        user = self.context['request'].user
         view = self.context.get('view')
 
         blog_pk = getattr(view, 'kwargs', {}).get('blog_pk')
         post_pk = getattr(view, 'kwargs', {}).get('post_pk')
 
         if blog_pk:
-            data['blog'] = Blog.objects.get(pk=blog_pk)
-            data.pop('post', None)
+            data['blog'] = get_object_or_404(Blog, pk=blog_pk)
         elif post_pk:
-            data['post'] = Post.objects.get(pk=post_pk)
-            data.pop('blog', None)
-        else:
+            data['post'] = get_object_or_404(Post, pk=post_pk)
 
-            if self.instance:
-                blog = data.get('blog', self.instance.blog)
-                post = data.get('post', self.instance.post)
-            else:
-                blog = data.get('blog')
-                post = data.get('post')
+        blog = data.get('blog')
+        post = data.get('post')
 
-            if not blog and not post:
-                raise serializers.ValidationError(
-                    "Rating must be linked to either a blog or a post.")
-            if blog and post:
-                raise serializers.ValidationError(
-                    "Rating cannot be linked to both a blog and a post.")
+        if blog and Rating.objects.filter(user=user, blog=blog).exists():
+            raise serializers.ValidationError(
+                "You have already rated this blog.")
+        if post and Rating.objects.filter(user=user, post=post).exists():
+            raise serializers.ValidationError(
+                "You have already rated this post.")
+
+        if (blog and post) or (not blog and not post):
+            raise serializers.ValidationError(
+                "Rating must be linked to either a blog or a post, not both or neither."
+            )
 
         return data
 

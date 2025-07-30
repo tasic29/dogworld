@@ -6,7 +6,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 class BlogManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().annotate(
+        return super().get_queryset().select_related('author').annotate(
             avg_rating=models.Avg('ratings__score'),
             rating_count=models.Count('ratings', distinct=True),
             comment_count=models.Count('comments', distinct=True)
@@ -122,9 +122,13 @@ class Rating(models.Model):
     )
 
     class Meta:
-        unique_together = [('user', 'blog'), ('user', 'post')]
         ordering = ['-id']
 
     def __str__(self):
-        target = self.blog.title if self.blog else f"Post {self.post.id}"
+        if self.blog:
+            target = self.blog.title
+        elif self.post:
+            target = f"Post {self.post.id}"
+        else:
+            target = "Unknown"
         return f"Rating {self.score} by {self.user.username} on {target}"

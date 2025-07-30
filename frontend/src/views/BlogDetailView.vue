@@ -61,7 +61,7 @@
       </div>
 
       <div class="space-y-8">
-        <div class="bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow-lg">
+        <div class="bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow-md">
           <CommentComponent type="blog" />
         </div>
       </div>
