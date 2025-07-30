@@ -3,7 +3,6 @@
     class="min-h-screen bg-gradient-to-b from-orange-50 to-amber-100 dark:from-slate-900 dark:to-slate-800 py-12 px-4"
   >
     <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Main Blog Content -->
       <div
         class="lg:col-span-2 bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow-lg hover:shadow-2xl transition p-8"
       >
@@ -24,8 +23,10 @@
             <div v-html="renderedContent"></div>
           </div>
 
-          <!-- Tags -->
-          <div v-if="blog.tags.length" class="flex flex-wrap gap-2 mt-6">
+          <div
+            v-if="blog.tags && blog.tags.length"
+            class="flex flex-wrap gap-2 mt-6"
+          >
             <span
               v-for="tag in blog.tags"
               :key="tag.id"
@@ -34,23 +35,43 @@
               #{{ tag.name }}
             </span>
           </div>
+
+          <div class="mt-8 pt-8 border-t border-gray-200 dark:border-slate-700">
+            <h3
+              class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200"
+            >
+              Rate this blog
+            </h3>
+            <RatingComponent
+              :blog-id="blog.id"
+              :initial-average="blog.avg_rating"
+              :initial-count="blog.rating_count"
+              :show-average-rating="true"
+            />
+          </div>
         </div>
+
         <div v-else class="text-center text-gray-500 dark:text-gray-300">
-          Loading blog post...
+          <div class="animate-pulse">
+            <div class="h-8 bg-gray-300 rounded mb-4"></div>
+            <div class="h-4 bg-gray-300 rounded mb-2"></div>
+            <div class="h-64 bg-gray-300 rounded"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Sidebar: Comments -->
-      <aside>
-        <CommentComponent type="blog" />
-      </aside>
+      <div class="space-y-8">
+        <div class="bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow-lg">
+          <CommentComponent type="blog" />
+        </div>
+      </div>
     </div>
   </section>
 </template>
 
 <script setup>
 import CommentComponent from "../components/CommentComponent.vue";
-import ConfirmDialog from "../components/ConfirmDialog.vue";
+import RatingComponent from "../components/RatingComponent.vue";
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
@@ -59,7 +80,6 @@ import MarkdownIt from "markdown-it";
 const route = useRoute();
 const blog = ref(null);
 const md = new MarkdownIt();
-const showConfirmDialog = ref(false);
 
 const formatDate = (date) =>
   new Date(date).toLocaleDateString("en-US", {
@@ -70,18 +90,15 @@ const formatDate = (date) =>
 
 onMounted(async () => {
   try {
-    const response = await axios.get(`/content/blogs/${route.params.id}/`);
-    blog.value = response.data;
-  } catch (error) {
-    console.error("Failed to load blog:", error);
+    const blogId = route.params.id;
+    const { data } = await axios.get(`/content/blogs/${blogId}/`);
+    blog.value = data;
+  } catch (err) {
+    console.error("Error fetching blog:", err);
   }
 });
 
 const renderedContent = computed(() => {
   return blog.value?.content ? md.render(blog.value.content) : "";
 });
-
-const confirmDelete = () => {
-  showConfirmDialog.value = true;
-};
 </script>
