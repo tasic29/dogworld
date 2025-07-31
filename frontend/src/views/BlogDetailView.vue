@@ -44,9 +44,10 @@
             </h3>
             <RatingComponent
               :blog-id="blog.id"
-              :initial-average="blog.avg_rating"
-              :initial-count="blog.rating_count"
+              :initial-average="blog.average_rating"
+              :initial-count="blog.total_ratings"
               :show-average-rating="true"
+              @rating-updated="handleRatingUpdate"
             />
           </div>
         </div>
@@ -94,9 +95,16 @@ onMounted(async () => {
     const { data } = await axios.get(`/content/blogs/${blogId}/`);
     blog.value = data;
   } catch (err) {
-    console.error("Error fetching blog:", err);
+    toast.error("Failed to load blog.");
   }
 });
+
+const handleRatingUpdate = ({ average, count }) => {
+  if (blog.value) {
+    blog.value.average_rating = average;
+    blog.value.total_ratings = count;
+  }
+};
 
 const renderedContent = computed(() => {
   return blog.value?.content ? md.render(blog.value.content) : "";

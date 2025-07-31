@@ -14,7 +14,6 @@ class BlogAdmin(admin.ModelAdmin):
     list_per_page = 10
     list_filter = ['created', 'updated', 'tags']
     list_select_related = ['author']
-    list_prefetch_related = ['tags']
     readonly_fields = ['thumbnail']
 
     def get_queryset(self, request):
@@ -110,14 +109,19 @@ class RatingFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return [
-            ('>4', '4+ stars'),
-            ('<4', '4 stars or less'),
+            ('4plus', '4+ stars'),
+            ('4less', '4 stars or less')
         ]
 
     def queryset(self, request, queryset):
-        if self.value() == '>4':
+        if self.value() is None:
+            return queryset
+
+        if self.value() == '4plus':
             return queryset.filter(score__gte=4)
-        return queryset.filter(score__lt=4)
+        elif self.value() == '4less':
+            return queryset.filter(score__lt=4)
+        return queryset
 
 
 @admin.action(description='Reset ratings')

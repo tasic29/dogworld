@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
-class BlogManager(models.Manager):
+class ContentManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related('author').annotate(
             avg_rating=models.Avg('ratings__score'),
@@ -26,7 +26,7 @@ class Blog(models.Model):
     updated = models.DateTimeField(auto_now=True)
     tags = models.ManyToManyField('Tag', blank=True)
 
-    objects = BlogManager()
+    objects = ContentManager()
 
     def __str__(self):
         return self.title
@@ -34,15 +34,6 @@ class Blog(models.Model):
     class Meta:
         verbose_name_plural = 'Blog'
         ordering = ['-created']
-
-
-class PostManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().select_related('author').annotate(
-            avg_rating=models.Avg('ratings__score'),
-            rating_count=models.Count('ratings', distinct=True),
-            comment_count=models.Count('comments', distinct=True)
-        )
 
 
 class Post(models.Model):
@@ -61,7 +52,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField('Tag', related_name='posts', blank=True)
 
-    objects = PostManager()
+    objects = ContentManager()
 
     def __str__(self):
         return f"{self.title} by {self.author.username}"

@@ -321,6 +321,7 @@ const showNotifDropdown = ref(false);
 const notifRef = ref(null);
 
 const fetchNotifications = async () => {
+  if (!authStore.isAuthenticated) return;
   try {
     const response = await axios.get("/messaging/notifications/");
     notifications.value = response.data.filter((n) => !n.is_read);

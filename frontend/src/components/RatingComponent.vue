@@ -1,8 +1,7 @@
 <template>
   <div class="rating-component space-y-3">
-    <!-- ✅ Fixed condition - check for averageRating OR ratingCount -->
     <div
-      v-if="showAverageRating && (averageRating > 0 || ratingCount > 0)"
+      v-if="showAverageRating"
       class="flex items-center gap-2 text-gray-700 dark:text-gray-300"
     >
       <div class="flex">
@@ -23,9 +22,7 @@
         </svg>
       </div>
       <span class="text-sm font-semibold">
-        {{ averageRating ? averageRating.toFixed(1) : "0.0" }} ({{
-          ratingCount
-        }}
+        {{ averageRating.toFixed(1) }} ({{ ratingCount }}
         {{ ratingCount === 1 ? "rating" : "ratings" }})
       </span>
     </div>
@@ -56,7 +53,6 @@
           </svg>
         </button>
       </div>
-      <!-- ✅ Add button to remove rating -->
       <button
         v-if="existingRatingId"
         @click="removeRating"
@@ -66,6 +62,7 @@
         Remove
       </button>
     </div>
+
     <div v-else class="text-sm text-gray-500 dark:text-gray-400 italic">
       <router-link
         to="/login"
@@ -84,52 +81,28 @@ import { useAuthStore } from "@/stores/auth";
 import { useToast } from "vue-toastification";
 
 const props = defineProps({
-  blogId: {
-    type: Number,
-    default: null,
-  },
-  postId: {
-    type: Number,
-    default: null,
-  },
-  initialAverage: {
-    type: [Number, String],
-    default: 0,
-  },
-  initialCount: {
-    type: [Number, String],
-    default: 0,
-  },
-  showAverageRating: {
-    type: Boolean,
-    default: true,
-  },
+  blogId: Number,
+  postId: Number,
+  initialAverage: { type: [Number, String], default: 0 },
+  initialCount: { type: [Number, String], default: 0 },
+  showAverageRating: { type: Boolean, default: true },
 });
+
+const emit = defineEmits(["rating-updated"]);
 
 const auth = useAuthStore();
 const toast = useToast();
 
 const userRating = ref(0);
-const averageRating = ref(parseFloat(props.initialAverage) || 0);
-const ratingCount = ref(parseInt(props.initialCount) || 0);
+const averageRating = ref(parseFloat(props.initialAverage));
+const ratingCount = ref(parseInt(props.initialCount));
 const existingRatingId = ref(null);
 const isSaving = ref(false);
 
-// ✅ Debug logging
-console.log("Rating component props:", {
-  initialAverage: props.initialAverage,
-  initialCount: props.initialCount,
-  parsedAverage: parseFloat(props.initialAverage),
-  parsedCount: parseInt(props.initialCount),
-});
-
 const fetchUserRating = async () => {
-  if (!auth.isAuthenticated || (!props.blogId && !props.postId)) {
-    return;
-  }
+  if (!auth.isAuthenticated || (!props.blogId && !props.postId)) return;
 
   try {
-    // ✅ Fixed URL structure to match your backend
     const url = props.blogId
       ? `/content/blogs/${props.blogId}/ratings/`
       : `/content/posts/${props.postId}/ratings/`;
@@ -137,94 +110,15 @@ const fetchUserRating = async () => {
     const response = await axios.get(url);
     const userRatings = response.data.results || response.data;
 
-    if (userRatings.length > 0) {
-      const userSpecificRating = userRatings.find(
-        (rating) => rating.user.id === auth.user.id
-      );
-      if (userSpecificRating) {
-        userRating.value = userSpecificRating.score;
-        existingRatingId.value = userSpecificRating.id;
-      }
+    const userSpecificRating = userRatings.find(
+      (rating) => rating.user.id === auth.user.id
+    );
+    if (userSpecificRating) {
+      userRating.value = userSpecificRating.score;
+      existingRatingId.value = userSpecificRating.id;
     }
   } catch (error) {
-    console.error("Error fetching user rating:", error);
-  }
-};
-
-const setRating = async (score) => {
-  if (isSaving.value) return;
-
-  isSaving.value = true;
-  const payload = { score: score };
-  let url = "";
-  let method = "";
-
-  // ✅ Fixed URL structure
-  if (props.blogId) {
-    url = `/content/blogs/${props.blogId}/ratings/`;
-  } else if (props.postId) {
-    url = `/content/posts/${props.postId}/ratings/`;
-  } else {
-    toast.error("Rating target (blog or post) not specified.");
-    isSaving.value = false;
-    return;
-  }
-
-  if (existingRatingId.value) {
-    method = "put";
-    url = `${url}${existingRatingId.value}/`;
-  } else {
-    method = "post";
-  }
-
-  try {
-    const response = await axios[method](url, payload);
-    userRating.value = response.data.score;
-    existingRatingId.value = response.data.id;
-    toast.success(`You rated ${score} stars! Thank you for your feedback! 🐾`);
-
-    // ✅ Re-fetch overall rating after successful submission
-    await fetchOverallRating();
-  } catch (error) {
-    console.error("Error setting rating:", error);
-    if (error.response?.data?.non_field_errors) {
-      toast.error(error.response.data.non_field_errors[0]);
-    } else if (error.response?.data?.detail) {
-      toast.error(error.response.data.detail);
-    } else {
-      toast.error("Failed to submit rating. Please try again.");
-    }
-    if (!existingRatingId.value) {
-      userRating.value = 0;
-    }
-  } finally {
-    isSaving.value = false;
-  }
-};
-
-// ✅ Add remove rating function
-const removeRating = async () => {
-  if (!existingRatingId.value || isSaving.value) return;
-
-  isSaving.value = true;
-
-  try {
-    const url = props.blogId
-      ? `/content/blogs/${props.blogId}/ratings/${existingRatingId.value}/`
-      : `/content/posts/${props.postId}/ratings/${existingRatingId.value}/`;
-
-    await axios.delete(url);
-
-    userRating.value = 0;
-    existingRatingId.value = null;
-    toast.success("Rating removed successfully!");
-
-    await fetchOverallRating();
-  } catch (error) {
-    console.error("Error removing rating:", error);
-    toast.error("Failed to remove rating. Please try again.");
-  } finally {
-    isSaving.value = false;
+    toast.error("Failed to fetch user rating. Please try again.");
   }
 };
 
@@ -238,34 +132,92 @@ const fetchOverallRating = async () => {
 
     const response = await axios.get(url);
 
-    // ✅ Debug logging
-    console.log("Fetched overall rating:", {
-      avg_rating: response.data.avg_rating,
-      rating_count: response.data.rating_count,
-    });
+    averageRating.value = parseFloat(response.data.average_rating) || 0;
+    ratingCount.value = parseInt(response.data.total_ratings) || 0;
 
-    averageRating.value = parseFloat(response.data.avg_rating) || 0;
-    ratingCount.value = parseInt(response.data.rating_count) || 0;
+    emit("rating-updated", {
+      average: averageRating.value,
+      count: ratingCount.value,
+    });
   } catch (error) {
-    console.error("Error fetching overall rating:", error);
+    toast.error("Failed to fetch overall rating. Please try again.");
+  }
+};
+
+const setRating = async (score) => {
+  if (isSaving.value) return;
+
+  isSaving.value = true;
+  const payload = { score };
+  let url = props.blogId
+    ? `/content/blogs/${props.blogId}/ratings/`
+    : `/content/posts/${props.postId}/ratings/`;
+
+  const method = existingRatingId.value ? "put" : "post";
+  if (existingRatingId.value) url += `${existingRatingId.value}/`;
+
+  try {
+    const response = await axios[method](url, payload);
+    userRating.value = response.data.score;
+    existingRatingId.value = response.data.id;
+    toast.success(`You rated ${score} stars! Thank you 🐾`);
+    await fetchOverallRating(); // Re-fetch overall average and count after successful action
+  } catch (error) {
+    console.error("Error setting rating:", error);
+    const msg =
+      error.response?.data?.non_field_errors?.[0] || // Catch Django-specific validation errors
+      error.response?.data?.detail || // Catch general DRF errors
+      "Failed to submit rating. Please try again.";
+    toast.error(msg);
+    if (!existingRatingId.value) userRating.value = 0;
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+const removeRating = async () => {
+  if (!existingRatingId.value || isSaving.value) return;
+
+  isSaving.value = true;
+  const url = props.blogId
+    ? `/content/blogs/${props.blogId}/ratings/${existingRatingId.value}/`
+    : `/content/posts/${props.postId}/ratings/${existingRatingId.value}/`;
+
+  try {
+    await axios.delete(url);
+    userRating.value = 0;
+    existingRatingId.value = null;
+    toast.success("Rating removed successfully!");
+    await fetchOverallRating();
+  } catch (error) {
+    toast.error("Failed to remove rating. Please try again.");
+  } finally {
+    isSaving.value = false;
   }
 };
 
 onMounted(() => {
-  if (auth.isAuthenticated) {
-    fetchUserRating();
-  }
+  if (auth.isAuthenticated) fetchUserRating();
+  fetchOverallRating();
 });
 
 watch(
   () => auth.isAuthenticated,
   (newVal) => {
     if (newVal) {
-      fetchUserRating();
+      fetchUserRating(); // Fetch user rating if logged in
     } else {
-      userRating.value = 0;
+      userRating.value = 0; // Clear user rating if logged out
       existingRatingId.value = null;
     }
+  }
+);
+
+watch(
+  () => [props.blogId, props.postId],
+  () => {
+    fetchUserRating();
+    fetchOverallRating();
   }
 );
 </script>
