@@ -3,7 +3,7 @@
     <!-- Average Rating Display -->
     <div
       v-if="showAverageRating"
-      class="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-amber-100 dark:border-gray-600"
+      class="mb-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-amber-100 dark:border-gray-600"
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -11,13 +11,15 @@
             <svg
               v-for="star in 5"
               :key="star"
+              class="w-5 h-5 drop-shadow-sm"
               :class="{
-                'text-amber-400': star <= Math.round(averageRating || 0),
-                'text-gray-300 dark:text-gray-500':
-                  star > Math.round(averageRating || 0),
+                'text-amber-400': averageRating >= star,
+                'text-amber-300':
+                  averageRating >= star - 0.5 && averageRating < star,
+                'text-gray-300 dark:text-gray-500': averageRating < star - 0.5,
               }"
-              class="w-5 h-5 fill-current drop-shadow-sm"
               viewBox="0 0 24 24"
+              fill="currentColor"
             >
               <path
                 d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 18.896l-7.416 3.817 1.48-8.279L.002 9.306l8.332-1.151L12 .587z"

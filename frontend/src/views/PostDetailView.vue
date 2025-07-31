@@ -17,7 +17,7 @@
           <img
             v-if="post.image"
             :src="post.image"
-            alt="post image"
+            alt="Post image"
             class="rounded-lg w-full object-cover max-h-[500px] shadow"
           />
 
@@ -73,7 +73,6 @@
               #{{ tag.name }}
             </span>
           </div>
-
           <!-- Edit/Delete Buttons -->
           <div v-if="canEdit" class="mt-6 flex justify-end gap-4">
             <button
@@ -88,6 +87,21 @@
             >
               Delete Post
             </button>
+          </div>
+          <!-- Rating Section -->
+          <div class="mt-8 pt-8 border-t border-gray-200 dark:border-slate-700">
+            <h3
+              class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200"
+            >
+              Rate this post
+            </h3>
+            <RatingComponent
+              :post-id="post.id"
+              :initial-average="post.average_rating"
+              :initial-count="post.total_ratings"
+              :show-average-rating="true"
+              @rating-updated="handleRatingUpdate"
+            />
           </div>
         </div>
 
@@ -117,6 +131,7 @@
 
 <script setup>
 import CommentComponent from "../components/CommentComponent.vue";
+import RatingComponent from "../components/RatingComponent.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -203,6 +218,13 @@ const onDeleteConfirmed = async () => {
     toast.error("Failed to delete post. 😿");
   } finally {
     showConfirmDialog.value = false;
+  }
+};
+
+const handleRatingUpdate = ({ average, count }) => {
+  if (post.value) {
+    post.value.average_rating = average;
+    post.value.total_ratings = count;
   }
 };
 </script>

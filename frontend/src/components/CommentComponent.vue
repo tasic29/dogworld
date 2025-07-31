@@ -15,11 +15,11 @@
           placeholder="Please, share your thoughts..."
           class="w-full p-2 rounded-xl border border-amber-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
         ></textarea>
-        <div class="mt-3 text-right">
+        <div class="mt-2 text-right">
           <button
             @click="submitComment"
             :disabled="isSubmitting || !newComment.trim()"
-            class="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-5 py-2 rounded-xl transition disabled:opacity-50"
+            class="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-5 py-2 mb-2 rounded-xl transition disabled:opacity-50"
           >
             {{ isSubmitting ? "Posting..." : "Post Comment" }}
           </button>
