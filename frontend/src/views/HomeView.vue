@@ -124,7 +124,7 @@
       </div>
 
       <!-- Stats Section -->
-      <div class="bg-amber-50 dark:bg-slate-700/50 p-8 rounded-xl shadow">
+      <div class="bg-amber-50 dark:bg-slate-700/50 p-8 rounded-xl shadow-lg">
         <h2
           class="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center"
         >
@@ -145,9 +145,9 @@
           </div>
           <div>
             <p class="text-3xl font-bold text-orange-600 dark:text-orange-300">
-              🚧
+              {{ ratingsCount }}
             </p>
-            <p class="text-gray-600 dark:text-gray-300">Ratings Coming Soon</p>
+            <p class="text-gray-600 dark:text-gray-300">Ratings</p>
           </div>
         </div>
       </div>
@@ -169,6 +169,7 @@ const blogs = ref([]);
 // Community stats
 const blogCount = ref(0);
 const postCount = ref(0);
+const ratingsCount = ref(0);
 
 const formatDate = (dateStr) => {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -196,6 +197,11 @@ onMounted(async () => {
     // Fetch user post count
     const postCountRes = await axios.get("/content/posts/");
     postCount.value = postCountRes.data.count || postCountRes.data.length;
+
+    // Fetch ratings count
+    const ratingsCountRes = await axios.get("/content/ratings/");
+    ratingsCount.value =
+      ratingsCountRes.data.count || ratingsCountRes.data.length;
   } catch (error) {
     console.error("Failed to fetch stats or blog posts:", error);
   }

@@ -93,7 +93,7 @@
             <h3
               class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200"
             >
-              Rate this post
+              Ratings
             </h3>
             <RatingComponent
               :post-id="post.id"

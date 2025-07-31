@@ -97,12 +97,10 @@
             Welcome, {{ authStore.user.username }}!
           </p>
 
-          <div
-            class="relative"
-            @mouseenter="showDropdown = true"
-            @mouseleave="showDropdown = false"
-          >
+          <!-- My Account Dropdown -->
+          <div class="relative" ref="accountDropdownRef">
             <button
+              @click="showDropdown = !showDropdown"
               class="text-sm font-medium bg-amber-300 text-amber-900 px-4 py-2 rounded-full hover:bg-amber-400 transition"
             >
               👤 My Account ▾
@@ -110,11 +108,8 @@
 
             <div
               v-if="showDropdown"
-              class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 shadow-lg rounded-lg z-50"
+              class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 shadow-lg rounded-lg z-50 border border-amber-200 dark:border-slate-600"
             >
-              <!-- Invisible bridge to fill the gap -->
-              <div class="absolute -top-2 right-0 w-full h-2"></div>
-
               <router-link
                 :to="{ name: 'account' }"
                 class="block w-full text-left py-2 px-4 hover:bg-amber-100 dark:hover:bg-slate-700 rounded-md transition"
@@ -303,7 +298,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
@@ -312,6 +307,7 @@ import axios from "axios";
 
 const isMobileMenuOpen = ref(false);
 const showDropdown = ref(false);
+const accountDropdownRef = ref(null);
 const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
@@ -357,7 +353,22 @@ const handleClickOutside = (e) => {
   if (notifRef.value && !notifRef.value.contains(e.target)) {
     showNotifDropdown.value = false;
   }
+  if (
+    accountDropdownRef.value &&
+    !accountDropdownRef.value.contains(e.target)
+  ) {
+    showDropdown.value = false;
+  }
 };
+
+watch(
+  () => authStore.isAuthenticated,
+  (newVal) => {
+    if (newVal) {
+      showDropdown.value = false;
+    }
+  }
+);
 
 onMounted(() => {
   if (authStore.isAuthenticated) {
