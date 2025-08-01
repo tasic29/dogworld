@@ -1,6 +1,4 @@
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import Prefetch
 from django.contrib.contenttypes.models import ContentType
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count
@@ -13,20 +11,18 @@ from rest_framework.decorators import action
 from messaging.models import Notification
 from core.pagination import DefaultPagination
 from core.permissions import IsAdminOrReadOnly
-from .serializers import CategorySerializer, ProductSerializer, TagSerializer
-from .models import Product, Category, Tag
+from .serializers import CategorySerializer, ProductSerializer
+from .models import Product, Category
 
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.select_related('category').prefetch_related(
-        Prefetch('tags', queryset=Tag.objects.order_by('name'))
-    )
+    queryset = Product.objects.select_related('category').order_by('title')
 
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['created_at', 'category', 'tags']
-    search_fields = ['title__icontains', 'description__icontains',
-                     'tags__name__icontains', 'category__name__icontains']
+    filterset_fields = ['created_at', 'category']
+    search_fields = ['title__icontains',
+                     'description__icontains', 'category__name__icontains']
     ordering_fields = ['id', 'title', 'price', 'created_at']
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = DefaultPagination
@@ -67,14 +63,3 @@ class CategoryViewSet(ModelViewSet):
 
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class TagViewSet(ModelViewSet):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['name']
-    search_fields = ['name__icontains']
-    ordering_fields = ['id', 'name']
-    permission_classes = [IsAdminOrReadOnly]
-    pagination_class = DefaultPagination

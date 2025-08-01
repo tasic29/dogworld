@@ -55,12 +55,12 @@
           </router-link>
         </li>
         <li>
-          <a
-            href="#"
+          <router-link
+            :to="{ name: 'marketplace' }"
             class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
           >
             🛒 Marketplace
-          </a>
+          </router-link>
         </li>
         <li>
           <a
@@ -243,10 +243,10 @@
           >
         </li>
         <li>
-          <a
+          <router-link
             href="#"
             class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
-            >🛒 Marketplace</a
+            >🛒 Marketplace</router-link
           >
         </li>
         <li>

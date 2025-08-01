@@ -11,6 +11,8 @@ import PostListView from "@/views/PostListView.vue";
 import PostDetailView from "@/views/PostDetailView.vue";
 import PostCreateView from "@/views/PostCreateView.vue";
 import PostUpdateView from "@/views/PostUpdateView.vue";
+import MarketplaceView from "@/views/MarketplaceView.vue";
+import ProductCreateView from "@/views/ProductCreateView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -81,6 +83,16 @@ const router = createRouter({
       path: "/post/:id",
       name: "post-detail",
       component: PostDetailView,
+    },
+    {
+      path: "/marketplace",
+      name: "marketplace",
+      component: MarketplaceView,
+    },
+    {
+      path: "/product/create",
+      name: "product-create",
+      component: ProductCreateView,
     },
   ],
 });

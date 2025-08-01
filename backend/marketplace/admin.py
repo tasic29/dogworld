@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.http import urlencode
 from django.db.models import Count
-from .models import Product, Category, Tag
+from .models import Product, Category
 from django.utils.html import format_html
 
 
@@ -11,17 +11,17 @@ from django.utils.html import format_html
 class ProductAdmin(admin.ModelAdmin):
     list_display = ['id', 'thumbnail', 'title',
                     'price', 'category_link', 'is_active', 'updated_at']
-    list_filter = ['is_active', 'category', 'tags', 'updated_at']
+    list_filter = ['is_active', 'category', 'updated_at']
     list_editable = ['title', 'price', 'is_active']
     list_select_related = ['category']
     search_fields = ['title', 'description']
-    autocomplete_fields = ['category', 'tags']
+    autocomplete_fields = ['category']
     readonly_fields = ['thumbnail']
     list_per_page = 10
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.select_related('category').prefetch_related('tags')
+        return qs.select_related('category')
 
     def thumbnail(self, obj):
         if obj.image:
@@ -59,10 +59,3 @@ class CategoryAdmin(admin.ModelAdmin):
             + urlencode({'category__id__exact': str(obj.id)})
         )
         return format_html('<a href="{}">{} Products</a>', url, obj.products_count)
-
-
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name']
-    search_fields = ['name']
-    list_per_page = 10
