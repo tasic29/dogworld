@@ -11,29 +11,37 @@ from rest_framework.decorators import action
 from messaging.models import Notification
 from core.pagination import DefaultPagination
 from core.permissions import IsAdminOrReadOnly
+from rest_framework.permissions import AllowAny
 from .serializers import CategorySerializer, ProductSerializer
 from .models import Product, Category
+from .filters import ProductFilter
 
 
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.select_related('category').order_by('title')
-
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['created_at', 'category']
+    filterset_class = ProductFilter
     search_fields = ['title__icontains',
                      'description__icontains', 'category__name__icontains']
     ordering_fields = ['id', 'title', 'price', 'created_at']
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = DefaultPagination
 
-    @action(detail=True, methods=['post'], url_path='click')
+    @action(detail=True, methods=['post'], url_path='click', permission_classes=[AllowAny])
     def register_click(self, request, pk=None):
         product = self.get_object()
         user = request.user if request.user.is_authenticated else None
 
+        if user and user.is_staff:
+            return Response({'status': 'Click registered'}, status=status.HTTP_200_OK)
+
+        staff_user = get_user_model().objects.filter(is_staff=True).first()
+        if not staff_user:
+            return Response({'status': 'Click registered'}, status=status.HTTP_200_OK)
+
         Notification.objects.create(
-            recipient=get_user_model().objects.filter(is_staff=True).first(),
+            recipient=staff_user,
             notification_type=Notification.NOTIFICATION_TYPE_AFFILIATE_CLICKED,
             message=f"{user.username if user else 'Anonymous'} clicked on {product.title}.",
             content_type=ContentType.objects.get_for_model(product),

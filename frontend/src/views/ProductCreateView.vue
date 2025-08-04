@@ -14,8 +14,9 @@
         <div>
           <label
             class="block font-semibold mb-1 text-gray-700 dark:text-gray-300"
-            >Title</label
           >
+            Title
+          </label>
           <input
             v-model="form.title"
             type="text"
@@ -28,8 +29,9 @@
         <div>
           <label
             class="block font-semibold mb-1 text-gray-700 dark:text-gray-300"
-            >Description</label
           >
+            Description
+          </label>
           <textarea
             v-model="form.description"
             rows="5"
@@ -41,8 +43,9 @@
         <div>
           <label
             class="block font-semibold mb-1 text-gray-700 dark:text-gray-300"
-            >Price ($)</label
           >
+            Price ($)
+          </label>
           <input
             v-model="form.price"
             type="number"
@@ -57,8 +60,9 @@
         <div>
           <label
             class="block font-semibold mb-1 text-gray-700 dark:text-gray-300"
-            >Affiliate URL</label
           >
+            Affiliate URL
+          </label>
           <input
             v-model="form.affiliate_url"
             type="url"
@@ -71,8 +75,9 @@
         <div>
           <label
             class="block font-semibold mb-1 text-gray-700 dark:text-gray-300"
-            >Category</label
           >
+            Category
+          </label>
           <select
             v-model="form.category"
             required
@@ -85,12 +90,29 @@
           </select>
         </div>
 
+        <!-- Is Active -->
+        <div class="flex items-center">
+          <input
+            v-model="form.is_active"
+            type="checkbox"
+            class="accent-amber-500 w-5 h-5"
+            id="isActive"
+          />
+          <label
+            for="isActive"
+            class="ml-2 text-gray-700 dark:text-gray-300 font-medium"
+          >
+            Active
+          </label>
+        </div>
+
         <!-- Image -->
         <div>
           <label
             class="block font-semibold mb-1 text-gray-700 dark:text-gray-300"
-            >Image</label
           >
+            Image
+          </label>
           <input
             ref="fileInput"
             type="file"
@@ -115,9 +137,8 @@
           </p>
         </div>
 
-        <!-- Error / Success -->
+        <!-- Error -->
         <p v-if="error" class="text-red-600 font-medium">{{ error }}</p>
-        <p v-if="success" class="text-green-600 font-medium">{{ success }}</p>
 
         <!-- Submit -->
         <button
@@ -147,6 +168,7 @@ const form = ref({
   price: "",
   affiliate_url: "",
   category: "",
+  is_active: true,
   image: null,
 });
 
@@ -154,13 +176,10 @@ const categories = ref([]);
 const fileInput = ref(null);
 const isSubmitting = ref(false);
 const error = ref("");
-const success = ref("");
 
-// Constants
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
-// Format size
 const formatFileSize = (bytes) => {
   if (!bytes) return "0 Bytes";
   const k = 1024;
@@ -169,17 +188,15 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
-// Load categories
 onMounted(async () => {
   try {
-    const res = await axios.get("/api/categories/");
+    const res = await axios.get("/marketplace/categories/");
     categories.value = res.data.results || res.data;
   } catch (err) {
     toast.error("Failed to load categories.");
   }
 });
 
-// Handle image
 const handleImage = (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -197,7 +214,6 @@ const handleImage = (e) => {
   form.value.image = file;
 };
 
-// Submit form
 const submitProduct = async () => {
   if (!form.value.title.trim()) return toast.error("Title is required.");
   if (!form.value.price || Number(form.value.price) < 1)
@@ -210,16 +226,17 @@ const submitProduct = async () => {
 
   const formData = new FormData();
   formData.append("title", form.value.title.trim());
-  formData.append("description", form.value.description || "");
+  formData.append("description", form.value.description?.trim() || "");
   formData.append("price", form.value.price);
   formData.append("affiliate_url", form.value.affiliate_url.trim());
-  formData.append("category", form.value.category);
+  formData.append("category_id", form.value.category); // Changed from "category" to "category_id"
+  formData.append("is_active", form.value.is_active);
   if (form.value.image) {
     formData.append("image", form.value.image);
   }
 
   try {
-    await axios.post("/api/products/", formData, {
+    await axios.post("/marketplace/products/", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -233,6 +250,7 @@ const submitProduct = async () => {
       affiliate_url: "",
       category: "",
       image: null,
+      is_active: true,
     };
     fileInput.value.value = "";
     setTimeout(() => router.push("/marketplace"), 1500);

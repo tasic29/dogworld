@@ -322,7 +322,7 @@ const fetchNotifications = async () => {
     const response = await axios.get("/messaging/notifications/");
     notifications.value = response.data.filter((n) => !n.is_read);
   } catch (error) {
-    toast.error("Failed to fetch notifications");
+    // toast.error("Failed to fetch notifications");
   }
 };
 

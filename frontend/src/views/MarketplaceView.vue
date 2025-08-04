@@ -11,6 +11,13 @@
 
         <!-- View Toggle -->
         <div class="flex items-center gap-2">
+          <router-link
+            v-if="isStaff"
+            :to="{ name: 'product-create' }"
+            class="bg-white text-amber-600 border border-amber-500 hover:bg-amber-100 font-bold py-3 px-6 rounded-full shadow transition"
+          >
+            Create Product
+          </router-link>
           <button
             @click="viewMode = 'grid'"
             :class="viewMode === 'grid' ? activeBtnClass : inactiveBtnClass"
@@ -174,6 +181,7 @@ import axios from "axios";
 
 const toast = useToast();
 const authStore = useAuthStore();
+const isStaff = computed(() => authStore.user?.is_staff);
 
 // Reactive state
 const products = ref([]);
