@@ -63,12 +63,12 @@
           </router-link>
         </li>
         <li>
-          <a
-            href="#"
+          <router-link
+            :to="{ name: 'services' }"
             class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
           >
             🐕‍🦺 Services
-          </a>
+          </router-link>
         </li>
       </ul>
 
@@ -244,16 +244,16 @@
         </li>
         <li>
           <router-link
-            href="#"
+            :to="{ name: 'marketplace' }"
             class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
             >🛒 Marketplace</router-link
           >
         </li>
         <li>
-          <a
-            href="#"
+          <router-link
+            :to="{ name: 'services' }"
             class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
-            >🐕‍🦺 Services</a
+            >🐕‍🦺 Services</router-link
           >
         </li>
         <template v-if="!authStore.isAuthenticated">

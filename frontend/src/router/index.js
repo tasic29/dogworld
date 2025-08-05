@@ -13,6 +13,7 @@ import PostCreateView from "@/views/PostCreateView.vue";
 import PostUpdateView from "@/views/PostUpdateView.vue";
 import MarketplaceView from "@/views/MarketplaceView.vue";
 import ProductCreateView from "@/views/ProductCreateView.vue";
+import ServiceListView from "@/views/ServiceListView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -93,6 +94,11 @@ const router = createRouter({
       path: "/product/create",
       name: "product-create",
       component: ProductCreateView,
+    },
+    {
+      path: "/services",
+      name: "services",
+      component: ServiceListView,
     },
   ],
 });

@@ -5,8 +5,10 @@
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-amber-700 dark:text-amber-300">
-          Blog Posts
+        <h1
+          class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400"
+        >
+          🐕 Blog Posts
         </h1>
 
         <!-- View Toggle -->

@@ -25,7 +25,7 @@
           </router-link>
           <router-link
             :to="{ name: 'posts' }"
-            class="bg-white text-amber-600 border border-amber-500 hover:bg-amber-100 font-bold py-3 px-6 rounded-full shadow transition"
+            class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           >
             Explore Posts
           </router-link>
@@ -39,7 +39,7 @@
           <router-link
             v-if="authStore.isAuthenticated"
             :to="{ name: 'marketplace' }"
-            class="bg-white text-amber-600 border border-amber-500 hover:bg-amber-100 font-bold py-3 px-6 rounded-full shadow transition"
+            class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           >
             Explore Marketplace
           </router-link>
