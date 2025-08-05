@@ -65,7 +65,7 @@
             :to="`/blog/${blog.id}`"
             v-for="blog in blogs"
             :key="blog.id"
-            class="bg-white/80 dark:bg-slate-700 rounded-xl p-6 shadow-lg hover:shadow-2xl transition"
+            class="bg-white/80 dark:bg-slate-700 rounded-xl p-6 shadow-lg hover:shadow-2xl transition transform hover:scale-105"
           >
             <img
               v-if="blog.image"

@@ -1,13 +1,29 @@
 <template>
   <section
-    class="py-12 px-4 bg-gradient-to-b from-orange-50 to-amber-100 dark:from-slate-900 dark:to-slate-800 min-h-screen"
+    class="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12 px-4"
   >
-    <div class="max-w-6xl mx-auto">
-      <header class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-amber-700 dark:text-amber-300">
-          Find Pet Services
-        </h1>
-        <div class="flex items-center gap-2">
+    <div class="max-w-7xl mx-auto">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-12">
+        <div>
+          <h1
+            class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400"
+          >
+            🐕 Find Pet Services
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400 mt-2">
+            Discover trusted services for your furry friends
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <router-link
+            v-if="isStaff"
+            :to="{ name: 'service-create' }"
+            class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+          >
+            Create Service
+          </router-link>
           <button
             @click="viewMode = 'grid'"
             :class="viewMode === 'grid' ? activeBtnClass : inactiveBtnClass"
@@ -21,81 +37,145 @@
             📋 List
           </button>
         </div>
-      </header>
-
-      <div class="flex flex-wrap gap-4 mb-6">
-        <input
-          v-model="search"
-          placeholder="Search..."
-          class="px-4 py-2 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-400"
-        />
-        <select
-          v-model="selectedType"
-          class="px-4 py-2 rounded-lg border border-amber-300"
-        >
-          <option value="">All Types</option>
-          <option v-for="(label, key) in SERVICE_TYPES" :key="key" :value="key">
-            {{ label }}
-          </option>
-        </select>
-        <input
-          v-model="selectedCity"
-          placeholder="City..."
-          class="px-4 py-2 rounded-lg border border-amber-300"
-        />
       </div>
 
+      <!-- Filters -->
+      <div
+        class="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-lg border border-white/20"
+      >
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="relative flex-1 min-w-64">
+            <div
+              class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+            >
+              <span class="text-gray-400">🔍</span>
+            </div>
+            <input
+              v-model="search"
+              type="text"
+              placeholder="Search for services..."
+              class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-200/50 bg-white/90 dark:bg-slate-700/90 transition-all duration-200"
+            />
+          </div>
+
+          <select
+            v-model="selectedType"
+            class="px-4 py-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:outline-none bg-white/90 dark:bg-slate-700/90 min-w-48"
+          >
+            <option value="">🏷️ All Types</option>
+            <option
+              v-for="(label, key) in SERVICE_TYPES"
+              :key="key"
+              :value="key"
+            >
+              {{ label }}
+            </option>
+          </select>
+
+          <input
+            v-model="selectedCity"
+            type="text"
+            placeholder="🏙️ City"
+            class="px-4 py-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:outline-none bg-white/90 dark:bg-slate-700/90 min-w-48"
+          />
+        </div>
+      </div>
+
+      <!-- Services Grid/List -->
       <div
         v-if="services.length"
-        :class="viewMode === 'grid' ? 'grid md:grid-cols-2 gap-6' : 'space-y-6'"
+        :class="
+          viewMode === 'grid'
+            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10'
+            : 'space-y-8'
+        "
       >
         <div
           v-for="service in services"
           :key="service.id"
-          class="bg-white/80 dark:bg-slate-800 rounded-xl p-6 shadow-lg hover:shadow-2xl transition"
+          class="rounded-2xl overflow-hidden shadow-xl flex flex-col bg-amber-100/40 dark:bg-slate-700/60 border border-orange-200 dark:border-slate-700 hover:border-amber-400 transition-all duration-300 transform hover:scale-105"
         >
-          <img
-            v-if="service.image"
-            :src="service.image"
-            alt="Service"
-            class="w-full h-32 object-cover rounded-lg mb-4 shadow"
-          />
-          <h2 class="text-xl font-semibold text-amber-700 dark:text-amber-300">
-            {{ service.name }}
-          </h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ service.city }} • {{ SERVICE_TYPES[service.service_type] }}
-          </p>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            {{ service.description }}
-          </p>
-          <a
-            :href="service.website_url"
-            target="_blank"
-            class="mt-2 block text-amber-600 dark:text-amber-400 hover:underline text-sm"
-            >Visit website →</a
+          <!-- Image -->
+          <div class="relative">
+            <div
+              class="flex items-center justify-center p-4 h-60 bg-white dark:bg-white"
+            >
+              <img
+                v-if="service.image"
+                :src="service.image"
+                alt="Service"
+                class="w-auto h-auto max-w-full max-h-full object-contain rounded-2xl"
+              />
+              <div
+                v-else
+                class="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100 dark:from-slate-600 dark:to-slate-700"
+              >
+                <span class="text-6xl opacity-50">🐶</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="px-6 py-4 mb-auto">
+            <h2
+              class="cursor-default font-semibold text-xl inline-block text-amber-700 dark:text-amber-300 mb-2"
+            >
+              {{ service.name }}
+            </h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+              {{ service.city }} • {{ SERVICE_TYPES[service.service_type] }}
+            </p>
+            <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-3">
+              {{ service.description }}
+            </p>
+          </div>
+
+          <!-- Website Link -->
+          <div
+            class="px-6 py-4 flex justify-between items-center bg-amber-100/40 dark:bg-slate-700/60 rounded-b-2xl"
           >
+            <a
+              :href="service.website_url"
+              target="_blank"
+              class="text-sm font-medium text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              🌐 Visit Website →
+            </a>
+          </div>
         </div>
       </div>
 
-      <p v-else class="text-center text-gray-500 dark:text-gray-400">
-        No services found.
-      </p>
+      <!-- No Services -->
+      <div v-else-if="!loading" class="text-center py-16">
+        <div class="text-8xl mb-4">🐾</div>
+        <h3 class="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-2">
+          No services found
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400">
+          Try adjusting your search or filter criteria
+        </p>
+      </div>
 
-      <div class="mt-8 flex justify-center gap-4">
+      <!-- Pagination -->
+      <div class="mt-12 flex justify-center items-center gap-4">
         <button
           @click="prevPage"
           :disabled="!previous"
-          class="px-4 py-2 rounded bg-amber-400 text-white font-semibold disabled:opacity-50"
+          class="flex items-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-slate-800 border-2 border-amber-200 dark:border-slate-600 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-gray-700 dark:text-gray-300 transition-all duration-200"
         >
-          Previous
+          <span>←</span> Previous
         </button>
+
+        <div class="px-4 py-2 bg-amber-500 text-white rounded-lg font-bold">
+          Page {{ currentPage }}
+        </div>
+
         <button
           @click="nextPage"
           :disabled="!next"
-          class="px-4 py-2 rounded bg-amber-400 text-white font-semibold disabled:opacity-50"
+          class="flex items-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-slate-800 border-2 border-amber-200 dark:border-slate-600 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-gray-700 dark:text-gray-300 transition-all duration-200"
         >
-          Next
+          Next <span>→</span>
         </button>
       </div>
     </div>
@@ -103,8 +183,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
+import { useToast } from "vue-toastification";
+import { useAuthStore } from "../stores/auth";
 import axios from "axios";
+
+const toast = useToast();
+const authStore = useAuthStore();
+const isStaff = computed(() => authStore.user?.is_staff);
+const loading = ref(false);
 
 const SERVICE_TYPES = {
   vet: "Veterinarian",
@@ -135,6 +222,7 @@ const inactiveBtnClass =
 
 // API fetcher
 const fetchServices = async (page = 1) => {
+  loading.value = true;
   try {
     const params = {
       page,
@@ -149,7 +237,9 @@ const fetchServices = async (page = 1) => {
     previous.value = res.data.previous;
     currentPage.value = page;
   } catch (err) {
-    console.error("Error fetching services:", err);
+    toast.error("Failed to load services.");
+  } finally {
+    loading.value = false;
   }
 };
 

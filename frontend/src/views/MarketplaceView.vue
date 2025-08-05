@@ -16,7 +16,6 @@
           </p>
         </div>
 
-        <!-- View Toggle -->
         <div class="flex items-center gap-3">
           <router-link
             v-if="isStaff"
@@ -40,12 +39,11 @@
         </div>
       </div>
 
-      <!-- Filters Section -->
+      <!-- Filters -->
       <div
         class="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-lg border border-white/20"
       >
         <div class="flex flex-wrap items-center gap-4">
-          <!-- Search -->
           <div class="relative flex-1 min-w-64">
             <div
               class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
@@ -60,7 +58,6 @@
             />
           </div>
 
-          <!-- Category Filter -->
           <select
             v-model="selectedCategory"
             class="px-4 py-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:outline-none bg-white/90 dark:bg-slate-700/90 min-w-48"
@@ -75,7 +72,6 @@
             </option>
           </select>
 
-          <!-- Sort Options -->
           <select
             v-model="selectedOrdering"
             class="px-4 py-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:outline-none bg-white/90 dark:bg-slate-700/90 min-w-48"
@@ -90,112 +86,94 @@
         </div>
       </div>
 
-      <!-- Products Grid/List -->
-      <div v-if="loading" class="text-center py-16">
-        <div class="relative inline-block">
-          <div
-            class="animate-spin rounded-full h-12 w-12 border-4 border-amber-200 border-t-amber-500"
-          ></div>
-          <div
-            class="absolute inset-0 rounded-full h-12 w-12 border-4 border-transparent border-t-orange-500 animate-spin"
-            style="animation-delay: 0.15s"
-          ></div>
-        </div>
-        <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
-          Finding the best products for your dog...
-        </p>
-      </div>
-
+      <!-- Product Cards -->
       <div
-        v-else-if="products.length"
+        v-if="products.length"
         :class="
           viewMode === 'grid'
-            ? 'grid grid-cols-1 lg:grid-cols-2 gap-8'
+            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10'
             : 'space-y-8'
         "
       >
         <div
           v-for="product in products"
           :key="product.id"
-          class="bg-white dark:bg-slate-800 lg:flex rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 border border-gray-100 dark:border-slate-700 hover:border-amber-300 dark:hover:border-amber-500"
+          class="rounded-2xl overflow-hidden shadow-xl flex flex-col bg-amber-100/40 dark:bg-slate-700/60 border border-orange-200 border-width-4 dark:border-slate-700 hover:border-amber-400 transition-all duration-300"
         >
-          <!-- Left: Image -->
-          <div class="lg:w-1/2">
-            <div
-              class="h-64 lg:h-auto overflow-hidden rounded-t-3xl lg:rounded-l-3xl lg:rounded-t-none"
+          <!-- Image Section -->
+          <div class="relative">
+            <a
+              @click.prevent="handleProductClick(product)"
+              class="cursor-pointer"
             >
-              <img
-                v-if="product.image"
-                :src="product.image"
-                alt=""
-                class="h-full w-full object-cover"
-              />
               <div
-                v-else
-                class="h-full w-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100 dark:from-slate-600 dark:to-slate-700"
+                class="flex items-center justify-center p-4 h-60 bg-white dark:bg-white"
               >
-                <span class="text-6xl opacity-50">🐶</span>
+                <img
+                  v-if="product.image"
+                  :src="product.image"
+                  :alt="product.title"
+                  class="w-auto h-auto max-w-full max-h-full object-contain"
+                />
+                <div
+                  v-else
+                  class="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100 dark:from-slate-600 dark:to-slate-700"
+                >
+                  <span class="text-6xl opacity-50">🐶</span>
+                </div>
               </div>
+              <!-- <div
+                class="hover:bg-transparent transition duration-300 absolute bottom-0 top-0 right-0 left-0 bg-gray-900 opacity-25"
+              ></div> -->
+            </a>
+
+            <!-- Category Badge -->
+            <div
+              v-if="product.category"
+              class="text-xs font-semibold absolute top-0 right-0 bg-amber-500 text-white px-4 py-2 mt-3 mr-3 rounded-l-full rounded-b-full shadow-md hover:bg-amber-600 transition duration-300"
+            >
+              {{ product.category.name }}
             </div>
           </div>
 
-          <!-- Right: Content -->
-          <div class="py-8 px-6 lg:px-10 lg:w-1/2 space-y-4">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
-              {{ product.title }}
-            </h2>
-
-            <div
-              class="flex items-center gap-4 text-sm font-semibold text-gray-600 dark:text-gray-300"
+          <!-- Content -->
+          <div class="px-6 py-4 mb-auto">
+            <a
+              @click.prevent="handleProductClick(product)"
+              class="cursor-pointer font-semibold text-xl inline-block text-amber-700 dark:text-amber-300 hover:text-amber-600 dark:hover:text-amber-400 transition duration-300 mb-2"
             >
-              <div
-                class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-3 py-1 rounded-full"
-              >
-                💰 ${{ product.price }}
-              </div>
-              <div
-                v-if="product.category"
-                class="bg-amber-100 text-amber-800 dark:bg-slate-700 dark:text-amber-300 px-3 py-1 rounded-full"
-              >
-                📂 {{ product.category.name }}
-              </div>
-            </div>
-
+              {{ product.title }}
+            </a>
             <p
               v-if="product.description"
-              class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3"
+              class="text-gray-600 dark:text-gray-300 text-sm line-clamp-3"
             >
               {{ product.description }}
             </p>
-
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-              📅 {{ formatDate(product.created_at) }}
+            <p v-else class="text-gray-500 dark:text-gray-400 text-sm italic">
+              No description available.
             </p>
+          </div>
 
-            <div>
-              <button
-                @click="handleProductClick(product)"
-                :disabled="clickingProduct === product.id"
-                class="mt-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 text-sm"
-              >
-                <span v-if="clickingProduct === product.id">
-                  <div
-                    class="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"
-                  ></div>
-                </span>
-                <span v-else class="flex items-center gap-1">
-                  🛒 View
-                  <span class="transition-transform group-hover:translate-x-1"
-                    >→</span
-                  >
-                </span>
-              </button>
-            </div>
+          <!-- Price and Date -->
+          <div
+            class="px-6 py-4 flex justify-between items-center bg-amber-100/40 dark:bg-slate-700/60 rounded-b-2xl"
+          >
+            <span
+              class="flex items-center text-lg font-extrabold text-amber-700 dark:text-amber-300"
+            >
+              💰 <span class="ml-1">${{ product.price }}</span>
+            </span>
+            <span
+              class="flex items-center text-sm text-slate-600 dark:text-slate-300"
+            >
+              📅 <span class="ml-1">{{ formatDate(product.created_at) }}</span>
+            </span>
           </div>
         </div>
       </div>
 
-      <!-- Empty State -->
+      <!-- No Products -->
       <div v-else-if="!loading" class="text-center py-16">
         <div class="text-8xl mb-4">🐕‍🦺</div>
         <h3 class="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-2">
@@ -237,7 +215,7 @@
       </div>
     </div>
 
-    <!-- Success Toast -->
+    <!-- Toast -->
     <div
       v-if="showSuccessToast"
       class="fixed bottom-6 right-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-4 rounded-2xl shadow-xl z-50 flex items-center gap-3 animate-bounce-in"
@@ -305,7 +283,7 @@ const fetchCategories = async () => {
     const res = await axios.get("/marketplace/categories/");
     categories.value = res.data.results || res.data;
   } catch (err) {
-    console.error("Failed to fetch categories:", err);
+    taost.error("Failed to load categories.");
   }
 };
 
@@ -328,7 +306,7 @@ const fetchProducts = async (page = 1) => {
     previous.value = res.data.previous;
     currentPage.value = page;
   } catch (err) {
-    console.error("Error fetching products:", err);
+    toast.error("Failed to load products.");
     products.value = [];
   } finally {
     loading.value = false;
@@ -388,60 +366,3 @@ watch([search, selectedCategory, selectedOrdering], () => {
   fetchProducts(1);
 });
 </script>
-
-<style scoped>
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-@keyframes bounce-in {
-  0% {
-    transform: scale(0.3) translate(20px, 20px);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.05) translate(0, 0);
-  }
-  70% {
-    transform: scale(0.9) translate(0, 0);
-  }
-  100% {
-    transform: scale(1) translate(0, 0);
-    opacity: 1;
-  }
-}
-
-.animate-bounce-in {
-  animation: bounce-in 0.6s ease-out;
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Custom gradient text */
-.bg-clip-text {
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
-/* Enhanced hover effects */
-.group:hover .group-hover\:scale-110 {
-  transform: scale(1.1);
-}
-
-.group:hover .group-hover\:translate-x-1 {
-  transform: translateX(0.25rem);
-}
-</style>

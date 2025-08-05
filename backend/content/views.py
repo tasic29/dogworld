@@ -54,7 +54,7 @@ class PostViewSet(ModelViewSet):
     filterset_fields = ['created_at', 'author', 'tags']
     search_fields = ['title', 'caption', 'tags__name', 'author__username__icontains',
                      'author__first_name__icontains', 'author__last_name__icontains']
-    ordering_fields = ['id', 'created_at']
+    ordering_fields = ['id', 'created_at', 'title']
     pagination_class = DefaultPagination
 
     def get_queryset(self):

@@ -1,18 +1,23 @@
 <template>
   <section
-    class="min-h-screen bg-gradient-to-b from-orange-50 to-amber-100 dark:from-slate-900 dark:to-slate-800 py-12 px-4"
+    class="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12 px-4"
   >
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-7xl mx-auto">
       <!-- Header -->
-      <div class="flex justify-between items-center mb-8">
-        <h1
-          class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400"
-        >
-          🐕 Blog Posts
-        </h1>
+      <div class="flex justify-between items-center mb-12">
+        <div>
+          <h1
+            class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400"
+          >
+            🐕 Blog Posts
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400 mt-2">
+            Insights, stories, and advice from the DogWorld community
+          </p>
+        </div>
 
         <!-- View Toggle -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
           <button
             @click="viewMode = 'grid'"
             :class="viewMode === 'grid' ? activeBtnClass : inactiveBtnClass"
@@ -29,105 +34,149 @@
       </div>
 
       <!-- Filters -->
-      <div class="flex flex-wrap items-center gap-4 mb-6">
-        <input
-          v-model="search"
-          type="text"
-          placeholder="Search blogs..."
-          class="px-4 py-2 rounded-lg border border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
-        />
+      <div
+        class="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-lg border border-white/20"
+      >
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="relative flex-1 min-w-64">
+            <div
+              class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+            >
+              <span class="text-gray-400">🔍</span>
+            </div>
+            <input
+              v-model="search"
+              type="text"
+              placeholder="Search blog posts..."
+              class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-200/50 bg-white/90 dark:bg-slate-700/90 transition-all duration-200"
+            />
+          </div>
 
-        <select
-          v-model="selectedTag"
-          class="px-4 py-2 rounded-lg border border-amber-300"
-        >
-          <option value="">All Tags</option>
-          <option v-for="tag in tags" :key="tag.id" :value="tag.name">
-            #{{ tag.name }}
-          </option>
-        </select>
+          <select
+            v-model="selectedTag"
+            class="px-4 py-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:outline-none bg-white/90 dark:bg-slate-700/90 min-w-48"
+          >
+            <option value="">🏷️ All Tags</option>
+            <option v-for="tag in tags" :key="tag.id" :value="tag.name">
+              {{ tag.name }}
+            </option>
+          </select>
 
-        <select
-          v-model="selectedOrdering"
-          class="px-4 py-2 rounded-lg border border-amber-300"
-        >
-          <option value="-created">Newest</option>
-          <option value="created">Oldest</option>
-          <option value="title">Title A–Z</option>
-          <option value="-title">Title Z–A</option>
-        </select>
+          <select
+            v-model="selectedOrdering"
+            class="px-4 py-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:outline-none bg-white/90 dark:bg-slate-700/90 min-w-48"
+          >
+            <option value="-created">🆕 Newest</option>
+            <option value="created">⏰ Oldest</option>
+            <option value="title">🔤 Title A–Z</option>
+            <option value="-title">🔤 Title Z–A</option>
+          </select>
+        </div>
       </div>
 
-      <!-- Blog List -->
+      <!-- Blog Cards -->
       <div
         v-if="blogs.length"
-        :class="viewMode === 'grid' ? 'grid md:grid-cols-2 gap-6' : 'space-y-6'"
+        :class="
+          viewMode === 'grid'
+            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10'
+            : 'space-y-8'
+        "
       >
         <router-link
           v-for="blog in blogs"
           :key="blog.id"
           :to="`/blog/${blog.id}`"
-          class="bg-white/80 dark:bg-slate-800 rounded-xl p-6 shadow-lg hover:shadow-2xl transition flex flex-col md:flex-row gap-4"
-          :class="viewMode === 'grid' ? '' : 'md:items-center'"
+          class="rounded-2xl overflow-hidden shadow-xl flex flex-col bg-amber-100/40 dark:bg-slate-700/60 border border-orange-200 dark:border-slate-700 hover:border-amber-400 transition-all duration-300 transform hover:scale-105"
         >
-          <img
-            v-if="blog.image"
-            :src="blog.image"
-            alt="Blog preview"
-            class="w-full md:w-48 h-32 object-cover rounded-lg shadow"
-          />
+          <!-- Image -->
+          <div class="relative">
+            <div
+              class="flex items-center justify-center p-4 h-60 bg-white dark:bg-white"
+            >
+              <img
+                v-if="blog.image"
+                :src="blog.image"
+                alt="Blog"
+                class="w-auto h-auto max-w-full max-h-full object-contain rounded-2xl"
+              />
+              <div
+                v-else
+                class="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100 dark:from-slate-600 dark:to-slate-700"
+              >
+                <span class="text-6xl opacity-50">📓</span>
+              </div>
+            </div>
+          </div>
 
-          <div>
+          <!-- Content -->
+          <div class="px-6 py-4 mb-auto">
             <h2
-              class="text-xl font-semibold text-amber-700 dark:text-amber-300"
+              class="cursor-pointer font-semibold text-xl inline-block text-amber-700 dark:text-amber-300 hover:text-amber-600 dark:hover:text-amber-400 transition duration-300 mb-2"
             >
               {{ blog.title }}
             </h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
               By {{ blog.author.username }} • {{ formatDate(blog.created) }}
             </p>
 
-            <!-- Blog-specific tags -->
-            <div v-if="blog.tags?.length" class="mt-2 flex flex-wrap gap-1">
+            <!-- Tags -->
+            <div v-if="blog.tags?.length" class="mt-2 flex flex-wrap gap-2">
               <span
                 v-for="tag in blog.tags"
                 :key="tag.id"
-                class="px-2 py-1 text-xs rounded-full bg-amber-100 dark:bg-slate-700 text-amber-700 dark:text-amber-300 font-medium"
+                class="px-3 py-1 text-xs rounded-full bg-amber-200 dark:bg-slate-600 text-amber-800 dark:text-amber-300 font-semibold"
               >
                 #{{ tag.name }}
               </span>
             </div>
+          </div>
 
+          <!-- Footer -->
+          <div
+            class="px-6 py-4 flex justify-between items-center bg-amber-100/40 dark:bg-slate-700/60 rounded-b-2xl"
+          >
             <router-link
               :to="`/blog/${blog.id}`"
-              class="inline-block mt-2 text-amber-600 dark:text-amber-400 hover:underline text-sm"
+              class="text-sm font-medium text-amber-600 dark:text-amber-400 hover:underline"
             >
-              Read more →
+              📖 Read more →
             </router-link>
           </div>
         </router-link>
       </div>
 
-      <!-- No Results -->
-      <p v-else class="text-center text-gray-500 dark:text-gray-400">
-        No blog posts found.
-      </p>
+      <!-- No Blogs -->
+      <div v-else class="text-center py-16">
+        <div class="text-8xl mb-4">📭</div>
+        <h3 class="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-2">
+          No blog posts found
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400">
+          Try adjusting your search or filter criteria
+        </p>
+      </div>
 
       <!-- Pagination -->
-      <div class="mt-8 flex justify-center gap-4">
+      <div class="mt-12 flex justify-center items-center gap-4">
         <button
           @click="prevPage"
           :disabled="!previous"
-          class="px-4 py-2 rounded bg-amber-400 text-white font-semibold disabled:opacity-50"
+          class="flex items-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-slate-800 border-2 border-amber-200 dark:border-slate-600 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-gray-700 dark:text-gray-300 transition-all duration-200"
         >
-          Previous
+          <span>←</span> Previous
         </button>
+
+        <div class="px-4 py-2 bg-amber-500 text-white rounded-lg font-bold">
+          Page {{ currentPage }}
+        </div>
+
         <button
           @click="nextPage"
           :disabled="!next"
-          class="px-4 py-2 rounded bg-amber-400 text-white font-semibold disabled:opacity-50"
+          class="flex items-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-slate-800 border-2 border-amber-200 dark:border-slate-600 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-gray-700 dark:text-gray-300 transition-all duration-200"
         >
-          Next
+          Next <span>→</span>
         </button>
       </div>
     </div>
@@ -136,7 +185,11 @@
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
+import { useAuthStore } from "../stores/auth";
+import { useToast } from "vue-toastification";
 import axios from "axios";
+
+const toast = useToast();
 
 // Reactive state
 const blogs = ref([]);
@@ -150,9 +203,10 @@ const previous = ref(null);
 const currentPage = ref(1);
 
 // Classes
-const activeBtnClass = "px-3 py-2 bg-amber-500 text-white rounded-md shadow";
+const activeBtnClass =
+  "px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl shadow-lg font-semibold";
 const inactiveBtnClass =
-  "px-3 py-2 bg-white dark:bg-slate-700 border border-amber-300 text-amber-600 dark:text-amber-300 rounded-md";
+  "px-4 py-2 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-2 border-amber-200 dark:border-slate-600 text-amber-600 dark:text-amber-300 rounded-xl hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-slate-600 transition-all duration-200 font-semibold";
 
 // Date formatter
 const formatDate = (dateStr) =>
@@ -168,7 +222,7 @@ const fetchTags = async () => {
     const res = await axios.get("/content/tags/");
     tags.value = res.data;
   } catch (err) {
-    console.error("Failed to fetch tags:", err);
+    toast.error("Failed to fetch tags.");
   }
 };
 
@@ -191,7 +245,7 @@ const fetchBlogs = async (page = 1) => {
     previous.value = res.data.previous;
     currentPage.value = page;
   } catch (err) {
-    console.error("Error fetching blogs:", err);
+    toast.error("Failed to load blogs.");
   }
 };
 
