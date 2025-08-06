@@ -30,7 +30,7 @@ class ProductViewSet(ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = DefaultPagination
 
-    @action(detail=True, methods=['post', 'get'], url_path='click', permission_classes=[AllowAny])
+    @action(detail=True, methods=['post'], url_path='click', permission_classes=[AllowAny])
     def register_click(self, request, slug=None):
         product = self.get_object()
         user = request.user if request.user.is_authenticated else None

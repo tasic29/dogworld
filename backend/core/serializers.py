@@ -2,6 +2,7 @@ from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer, UserSerializer as BaseUserSerializer
 from .models import MyUser, Notification
 from marketplace.models import Product
+from services.models import Service
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
@@ -46,4 +47,6 @@ class NotificationSerializer(serializers.ModelSerializer):
             return f"/post/{target.post.id}/#comment-{target.id}"
         elif isinstance(target, Product):
             return f"/marketplace/product/{target.slug}"
+        elif isinstance(target, Service):
+            return f"/services/{target.slug}"
         return "/"

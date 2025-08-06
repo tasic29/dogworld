@@ -18,6 +18,8 @@ from .serializers import (BlogSerializer,
                           RatingSerializer,
                           TagSerializer)
 from .models import Blog, Post, Tag, Comment, Rating
+from core.models import Notification
+from core.utils import create_notification
 
 
 class BlogViewSet(ModelViewSet):
@@ -155,7 +157,16 @@ class RatingViewSet(ModelViewSet):
         if (blog and blog.author == user) or (post and post.author == user):
             raise ValidationError("You cannot rate your own blog or post.")
 
-        serializer.save(user=user)
+        rating = serializer.save(user=user)
+
+        recipient = blog.author if blog else post.author
+        if recipient != user:
+            create_notification(
+                recipient=recipient,
+                notification_type=Notification.NOTIFICATION_TYPE_RATING_GIVEN,
+                message=f"{user.username} rated your {'blog' if blog else 'post'} with {rating.score}⭐.",
+                content_object=blog if blog else post,
+            )
 
     def perform_update(self, serializer):
         if serializer.instance.user != self.request.user and not self.request.user.is_staff:

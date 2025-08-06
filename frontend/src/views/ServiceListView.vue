@@ -135,8 +135,8 @@
             class="px-6 py-4 flex justify-between items-center bg-amber-100/40 dark:bg-slate-700/60 rounded-b-2xl"
           >
             <a
-              :href="service.website_url"
-              target="_blank"
+              href="#"
+              @click.prevent="handleClick(service)"
               class="text-sm font-medium text-amber-600 dark:text-amber-400 hover:underline"
             >
               🌐 Visit Website →
@@ -240,6 +240,16 @@ const fetchServices = async (page = 1) => {
     toast.error("Failed to load services.");
   } finally {
     loading.value = false;
+  }
+};
+
+const handleClick = async (service) => {
+  try {
+    await axios.post(`/services/${service.slug}/click/`);
+  } catch (err) {
+    console.warn("Click tracking failed:", err);
+  } finally {
+    window.open(service.website_url, "_blank");
   }
 };
 

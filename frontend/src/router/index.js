@@ -16,6 +16,7 @@ import ProductCreateView from "@/views/ProductCreateView.vue";
 import ServiceListView from "@/views/ServiceListView.vue";
 import ServiceCreateView from "@/views/ServiceCreateView.vue";
 import ProductDetailView from "@/views/ProductDetailView.vue";
+import ServiceDetailView from "@/views/ServiceDetailView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -101,6 +102,11 @@ const router = createRouter({
       component: ProductCreateView,
     },
     {
+      path: "/marketplace/product/:slug",
+      name: "product-detail",
+      component: ProductDetailView,
+    },
+    {
       path: "/services",
       name: "services",
       component: ServiceListView,
@@ -114,9 +120,9 @@ const router = createRouter({
       },
     },
     {
-      path: "/marketplace/product/:slug",
-      name: "product-detail",
-      component: ProductDetailView,
+      path: "/services/:slug",
+      name: "service-detail",
+      component: ServiceDetailView,
     },
   ],
 });

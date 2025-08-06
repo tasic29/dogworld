@@ -42,11 +42,13 @@ class Notification(models.Model):
     NOTIFICATION_TYPE_NEW_MESSAGE = 'message'
     NOTIFICATION_TYPE_NEW_COMMENT = 'comment'
     NOTIFICATION_TYPE_AFFILIATE_CLICKED = 'affiliate_click'
+    NOTIFICATION_TYPE_RATING_GIVEN = 'rating_given'
 
     NOTIFICATION_TYPES = [
         (NOTIFICATION_TYPE_NEW_MESSAGE, 'New Message'),
         (NOTIFICATION_TYPE_NEW_COMMENT, 'New Comment'),
         (NOTIFICATION_TYPE_AFFILIATE_CLICKED, 'Affiliate Link Clicked'),
+        (NOTIFICATION_TYPE_RATING_GIVEN, 'Rating Given'),
     ]
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
