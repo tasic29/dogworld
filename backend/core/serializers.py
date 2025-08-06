@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer, UserSerializer as BaseUserSerializer
-from .models import MyUser
+from .models import MyUser, Notification
+from marketplace.models import Product
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
@@ -24,3 +25,25 @@ class PublicUserSerializer(serializers.ModelSerializer):
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    target_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Notification
+        fields = [
+            'id', 'recipient', 'notification_type', 'message',
+            'is_read', 'target_url'
+        ]
+        read_only_fields = ['recipient', 'notification_type', 'message']
+
+    def get_target_url(self, obj):
+        target = obj.content_object
+        if hasattr(target, 'blog') and target.blog:
+            return f"/blog/{target.blog.id}/#comment-{target.id}"
+        elif hasattr(target, 'post') and target.post:
+            return f"/post/{target.post.id}/#comment-{target.id}"
+        elif isinstance(target, Product):
+            return f"/marketplace/product/{target.slug}"
+        return "/"

@@ -1,5 +1,4 @@
 from django.contrib.contenttypes.models import ContentType
-from messaging.models import Notification
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from .models import Blog, Post, Tag, Comment, Rating

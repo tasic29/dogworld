@@ -1,6 +1,7 @@
 from rest_framework.routers import DefaultRouter
 
-from .views import MessageViewSet, NotificationViewSet
+from .views import MessageViewSet
+from core.views import NotificationViewSet
 
 router = DefaultRouter()
 router.register('messages', MessageViewSet, basename='message')

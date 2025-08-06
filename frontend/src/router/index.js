@@ -15,9 +15,13 @@ import MarketplaceView from "@/views/MarketplaceView.vue";
 import ProductCreateView from "@/views/ProductCreateView.vue";
 import ServiceListView from "@/views/ServiceListView.vue";
 import ServiceCreateView from "@/views/ServiceCreateView.vue";
+import ProductDetailView from "@/views/ProductDetailView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior() {
+    return { top: 0 };
+  },
   routes: [
     {
       path: "/",
@@ -108,6 +112,11 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
       },
+    },
+    {
+      path: "/marketplace/product/:slug",
+      name: "product-detail",
+      component: ProductDetailView,
     },
   ],
 });

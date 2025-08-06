@@ -8,7 +8,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.decorators import action
 
-from messaging.models import Notification
+from core.models import Notification
+from core.utils import create_notification
 from core.pagination import DefaultPagination
 from core.permissions import IsAdminOrReadOnly
 from rest_framework.permissions import AllowAny
@@ -25,11 +26,12 @@ class ProductViewSet(ModelViewSet):
     search_fields = ['title__icontains',
                      'description__icontains', 'category__name__icontains']
     ordering_fields = ['id', 'title', 'price', 'created_at']
+    lookup_field = 'slug'
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = DefaultPagination
 
-    @action(detail=True, methods=['post'], url_path='click', permission_classes=[AllowAny])
-    def register_click(self, request, pk=None):
+    @action(detail=True, methods=['post', 'get'], url_path='click', permission_classes=[AllowAny])
+    def register_click(self, request, slug=None):
         product = self.get_object()
         user = request.user if request.user.is_authenticated else None
 
@@ -40,12 +42,11 @@ class ProductViewSet(ModelViewSet):
         if not staff_user:
             return Response({'status': 'Click registered'}, status=status.HTTP_200_OK)
 
-        Notification.objects.create(
+        create_notification(
             recipient=staff_user,
             notification_type=Notification.NOTIFICATION_TYPE_AFFILIATE_CLICKED,
             message=f"{user.username if user else 'Anonymous'} clicked on {product.title}.",
-            content_type=ContentType.objects.get_for_model(product),
-            object_id=product.id
+            content_object=product
         )
         return Response({'status': 'Click registered'}, status=status.HTTP_200_OK)
 

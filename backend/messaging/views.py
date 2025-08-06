@@ -9,8 +9,8 @@ from rest_framework.decorators import action
 from rest_framework import status
 
 
-from .models import Message, Notification
-from .serializers import MessageSerializer, NotificationSerializer
+from .models import Message
+from .serializers import MessageSerializer
 from core.permissions import MessagePermission
 from core.pagination import DefaultPagination
 
@@ -36,15 +36,6 @@ class MessageViewSet(ModelViewSet):
             Q(sender=user, is_deleted_by_sender=False) |
             Q(receiver=user, is_deleted_by_receiver=False)
         )
-
-    # def get_queryset(self):
-    #     user = self.request.user
-    #     if self.request.user.is_staff:
-    #         return Message.objects.all()
-    #     return Message.objects.filter(
-    #         Q(sender=user, is_deleted_by_sender=False) |
-    #         Q(receiver=user, is_deleted_by_receiver=False)
-    #     )
 
     def list(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -92,30 +83,3 @@ class MessageViewSet(ModelViewSet):
         message.is_read = True
         message.save()
         return Response({'status': 'Message marked as read'}, status=status.HTTP_200_OK)
-
-
-class NotificationViewSet(ModelViewSet):
-    serializer_class = NotificationSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    ordering_fields = ['id', 'created_at']
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['request'] = self.request
-        return context
-
-    def get_queryset(self):
-        if self.request.user.is_staff:
-            return Notification.objects.all()
-
-        return Notification.objects.filter(recipient=self.request.user)
-
-    @action(detail=True, methods=['patch'])
-    def mark_as_read(self, request, pk=None):
-        notification = self.get_object()
-        if notification.recipient == request.user:
-            if not notification.is_read:
-                notification.is_read = True
-                notification.save()
-            return Response({'status': 'Notification marked as read'}, status=status.HTTP_200_OK)
-        return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)

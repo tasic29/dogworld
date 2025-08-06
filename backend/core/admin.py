@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import MyUser, UserProfile
+from .models import MyUser, UserProfile, Notification
 
 
 @admin.register(MyUser)
@@ -15,3 +15,11 @@ class UserProfileAdmin(admin.ModelAdmin):
                     'user__last_name',   'location', 'joined']
     search_fields = ['user__email', 'user__username', 'location']
     list_filter = ['joined']
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['recipient']
+    list_display = ['id', 'recipient', 'notification_type',
+                    'message', 'is_read', 'created_at']
+    list_filter = ['is_read']

@@ -97,7 +97,7 @@
       >
         <div
           v-for="product in products"
-          :key="product.id"
+          :key="product.slug"
           class="rounded-2xl overflow-hidden shadow-xl flex flex-col bg-amber-100/40 dark:bg-slate-700/60 border border-orange-200 border-width-4 dark:border-slate-700 hover:border-amber-400 transition-all duration-300"
         >
           <!-- Image Section -->
@@ -283,7 +283,7 @@ const fetchCategories = async () => {
     const res = await axios.get("/marketplace/categories/");
     categories.value = res.data.results || res.data;
   } catch (err) {
-    taost.error("Failed to load categories.");
+    toast.error("Failed to load categories.");
   }
 };
 
@@ -314,11 +314,11 @@ const fetchProducts = async (page = 1) => {
 };
 
 const handleProductClick = async (product) => {
-  clickingProduct.value = product.id;
+  clickingProduct.value = product.slug;
 
   try {
     // Register the click
-    await axios.post(`/marketplace/products/${product.id}/click/`);
+    await axios.post(`/marketplace/products/${product.slug}/click/`);
     showSuccessToast.value = true;
     setTimeout(() => {
       showSuccessToast.value = false;

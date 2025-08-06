@@ -1,6 +1,8 @@
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
-from .models import Message, Notification
+from .models import Message
+from core.models import Notification
+from core.utils import create_notification
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -28,48 +30,10 @@ class MessageSerializer(serializers.ModelSerializer):
             sender_name = message.sender.username
 
         # create Notification
-        Notification.objects.create(
+        create_notification(
             recipient=message.receiver,
             notification_type=Notification.NOTIFICATION_TYPE_NEW_MESSAGE,
             message=f'{sender_name} sent you a new message.',
-            content_type=ContentType.objects.get_for_model(Message),
-            object_id=message.id
+            content_object=message
         )
         return message
-
-
-# class NotificationSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Notification
-#         fields = ['id', 'recipient', 'notification_type', 'message', 'is_read']
-#         read_only_fields = ['recipient', 'notification_type', 'message']
-
-    # def update(self, instance, validated_data):
-    #     user = self.context['request'].user
-
-    #     if instance.recipient != user:
-    #         raise serializers.ValidationError(
-    #             "You can only mark your own notifications as read.")
-
-    #     if 'is_read' in validated_data:
-    #         instance.is_read = validated_data['is_read']
-    #         instance.save()
-    #     return instance
-class NotificationSerializer(serializers.ModelSerializer):
-    target_url = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Notification
-        fields = [
-            'id', 'recipient', 'notification_type', 'message',
-            'is_read', 'target_url'
-        ]
-        read_only_fields = ['recipient', 'notification_type', 'message']
-
-    def get_target_url(self, obj):
-        comment = obj.content_object
-        if hasattr(comment, 'blog') and comment.blog:
-            return f"/blog/{comment.blog.id}/#comment-{comment.id}"
-        elif hasattr(comment, 'post') and comment.post:
-            return f"/post/{comment.post.id}/#comment-{comment.id}"
-        return "/"
