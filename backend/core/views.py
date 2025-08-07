@@ -1,14 +1,20 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from django.core.exceptions import PermissionDenied
-from django.db.models import Q
+from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework import status
 
-from .models import Notification
-from .serializers import NotificationSerializer
+from .models import Notification, MyUser
+from .serializers import NotificationSerializer, PublicUserSerializer
+
+
+class PublicUserDetailView(generics.RetrieveAPIView):
+    queryset = MyUser.objects.all()
+    serializer_class = PublicUserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'username'
 
 
 class NotificationViewSet(ModelViewSet):

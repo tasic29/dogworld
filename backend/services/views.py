@@ -43,7 +43,7 @@ class ServiceViewSet(ModelViewSet):
         create_notification(
             recipient=staff_user,
             notification_type=Notification.NOTIFICATION_TYPE_AFFILIATE_CLICKED,
-            message=f"{user.username if user else 'Anonymous'} clicked on {service.name}.",
+            message=f"{user.username if user else 'Anonymous'} clicked on service: {service.name}.",
             content_object=service
         )
         return Response({'status': 'Click registered'}, status=status.HTTP_200_OK)
