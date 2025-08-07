@@ -16,6 +16,9 @@ class PublicUserDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'username'
 
+    def get_serializer_context(self):
+        return {'request': self.request}
+
 
 class NotificationViewSet(ModelViewSet):
     serializer_class = NotificationSerializer

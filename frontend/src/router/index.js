@@ -17,6 +17,7 @@ import ServiceListView from "@/views/ServiceListView.vue";
 import ServiceCreateView from "@/views/ServiceCreateView.vue";
 import ProductDetailView from "@/views/ProductDetailView.vue";
 import ServiceDetailView from "@/views/ServiceDetailView.vue";
+import PublicProfileView from "@/views/PublicProfileView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -123,6 +124,11 @@ const router = createRouter({
       path: "/services/:slug",
       name: "service-detail",
       component: ServiceDetailView,
+    },
+    {
+      path: "/pack/:username",
+      name: "public-profile",
+      component: PublicProfileView,
     },
   ],
 });

@@ -315,7 +315,7 @@ const loadUserData = async () => {
     userInfo.value.date_joined = userData.date_joined;
     userInfo.value.is_active = userData.is_active;
 
-    console.log("User data loaded:", userData);
+    // console.log("User data loaded:", userData);
   } catch (error) {
     console.error("Error loading user data:", error);
     toast.error("Failed to load profile data 🐕");

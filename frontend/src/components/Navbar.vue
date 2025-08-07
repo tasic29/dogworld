@@ -5,7 +5,6 @@
     <div
       class="max-w-screen-xl mx-auto flex items-center justify-between px-4 py-3"
     >
-      <!-- Logo Section -->
       <router-link :to="{ name: 'home' }" class="flex items-center group">
         <div class="relative">
           <img
@@ -28,7 +27,6 @@
         </div>
       </router-link>
 
-      <!-- Desktop Navigation -->
       <ul class="hidden lg:flex space-x-4 font-medium items-center">
         <li>
           <router-link
@@ -72,7 +70,6 @@
         </li>
       </ul>
 
-      <!-- Auth Buttons -->
       <div class="hidden lg:flex items-center gap-3">
         <template v-if="!authStore.isAuthenticated">
           <router-link
@@ -89,7 +86,6 @@
           </router-link>
         </template>
         <template v-else>
-          <!-- Welcome Message -->
           <p
             v-if="authStore.isAuthenticated && authStore.user"
             class="text-sm font-medium text-amber-700 dark:text-amber-300 mr-2 px-3 py-1 bg-amber-100 dark:bg-slate-700 rounded-full border border-amber-400 dark:border-slate-600"
@@ -97,13 +93,23 @@
             Welcome, {{ authStore.user.username }}!
           </p>
 
-          <!-- My Account Dropdown -->
           <div class="relative" ref="accountDropdownRef">
             <button
               @click="showDropdown = !showDropdown"
-              class="text-sm font-medium bg-amber-300 text-amber-900 px-4 py-2 rounded-full hover:bg-amber-400 transition"
+              class="focus:outline-none"
             >
-              👤 My Account ▾
+              <img
+                v-if="authStore.user && authStore.user.profile_image"
+                :src="authStore.user.profile_image"
+                alt="Profile"
+                class="h-10 w-10 rounded-full border-2 border-amber-400 object-cover hover:border-amber-500 transition-all duration-300"
+              />
+              <div
+                v-else
+                class="h-10 w-10 rounded-full bg-amber-300 flex items-center justify-center text-amber-900 text-xl font-bold border-2 border-amber-400"
+              >
+                {{ authStore.user?.username[0].toUpperCase() }}
+              </div>
             </button>
 
             <div
@@ -125,7 +131,6 @@
             </div>
           </div>
 
-          <!-- Notification Bell -->
           <div class="relative mr-3" ref="notifRef">
             <button
               class="text-xl relative text-amber-700 dark:text-amber-300"
@@ -140,7 +145,6 @@
               </span>
             </button>
 
-            <!-- Dropdown -->
             <div
               v-if="showNotifDropdown"
               class="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 shadow-xl rounded-lg z-50 border border-amber-200 dark:border-slate-700 max-h-96 overflow-y-auto"
@@ -167,7 +171,6 @@
         </template>
       </div>
 
-      <!-- Mobile Menu Button -->
       <button
         @click="isMobileMenuOpen = !isMobileMenuOpen"
         class="lg:hidden text-amber-600 dark:text-amber-300 focus:outline-none"
@@ -206,9 +209,7 @@
       </button>
     </div>
 
-    <!-- Mobile Menu Dropdown -->
     <div v-if="isMobileMenuOpen" class="px-4 pb-4 lg:hidden">
-      <!-- Mobile Welcome Message -->
       <div
         v-if="authStore.isAuthenticated"
         class="mb-3 px-4 py-2 bg-amber-100 dark:bg-slate-700 rounded-lg border border-amber-200 dark:border-slate-600"

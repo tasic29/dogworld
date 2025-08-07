@@ -8,6 +8,12 @@ from django.contrib.auth.models import AbstractUser
 class MyUser(AbstractUser):
     email = models.EmailField(unique=True)
     location = models.CharField(max_length=200, blank=True, null=True)
+    profile_image = models.ImageField(
+        upload_to='profile_images/',
+        null=True,
+        blank=True,
+        default='profile_images/default.webp'
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
