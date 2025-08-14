@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="sticky top-0 z-50 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100 border-b-4 border-amber-300 dark:bg-gradient-to-r dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 dark:border-amber-600 transition-all duration-300 shadow-lg"
+    class="sticky top-0 z-50 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-800 border-b-4 border-amber-300 dark:border-amber-600 shadow-xl transition-all duration-300"
   >
     <div
       class="max-w-screen-xl mx-auto flex items-center justify-between px-4 py-3"
@@ -10,14 +10,16 @@
           <img
             :src="logo"
             alt="Dogworld Logo"
-            class="h-12 w-auto rounded-full border-2 border-amber-300 group-hover:border-amber-400 transition-all duration-300"
+            class="h-12 w-auto rounded-full border-2 border-amber-300 group-hover:border-amber-400 transition-all duration-300 shadow-md"
           />
-          <div class="absolute -top-1 -right-1 text-amber-600 animate-bounce">
+          <div
+            class="absolute -top-1 -right-1 text-amber-600 dark:text-amber-300 animate-bounce"
+          >
             🐾
           </div>
         </div>
         <span
-          class="ml-3 text-2xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-300 hover:scale-105 hover:from-amber-600 hover:to-orange-500 transition-all duration-300 ease-in-out"
+          class="ml-3 text-2xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-300 group-hover:scale-105 group-hover:from-amber-600 group-hover:to-orange-500 transition-all duration-300 ease-in-out"
         >
           DOGWORLD
         </span>
@@ -31,7 +33,7 @@
         <li>
           <router-link
             :to="{ name: 'home' }"
-            class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
+            class="flex items-center text-gray-700 dark:text-gray-300 px-3 py-2 rounded-full transition-all hover:bg-amber-100 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-amber-300"
           >
             🏠 Home
           </router-link>
@@ -39,7 +41,7 @@
         <li>
           <router-link
             :to="{ name: 'blogs' }"
-            class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
+            class="flex items-center text-gray-700 dark:text-gray-300 px-3 py-2 rounded-full transition-all hover:bg-amber-100 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-amber-300"
           >
             📝 Blog
           </router-link>
@@ -47,7 +49,7 @@
         <li>
           <router-link
             :to="{ name: 'posts' }"
-            class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
+            class="flex items-center text-gray-700 dark:text-gray-300 px-3 py-2 rounded-full transition-all hover:bg-amber-100 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-amber-300"
           >
             📸 Posts
           </router-link>
@@ -55,7 +57,7 @@
         <li>
           <router-link
             :to="{ name: 'marketplace' }"
-            class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
+            class="flex items-center text-gray-700 dark:text-gray-300 px-3 py-2 rounded-full transition-all hover:bg-amber-100 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-amber-300"
           >
             🛒 Marketplace
           </router-link>
@@ -63,7 +65,7 @@
         <li>
           <router-link
             :to="{ name: 'services' }"
-            class="flex items-center text-gray-700 hover:text-amber-700 dark:text-gray-300 dark:hover:text-amber-300 px-3 py-2 rounded-full transition-all"
+            class="flex items-center text-gray-700 dark:text-gray-300 px-3 py-2 rounded-full transition-all hover:bg-amber-100 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-amber-300"
           >
             🐕‍🦺 Services
           </router-link>
@@ -74,7 +76,7 @@
         <template v-if="!authStore.isAuthenticated">
           <router-link
             :to="{ name: 'signup' }"
-            class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-full shadow-lg font-medium transition"
+            class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-full shadow-lg font-medium transition transform hover:scale-105"
           >
             🦴 Join the Pack
           </router-link>
@@ -94,7 +96,7 @@
             }"
           >
             <p
-              class="text-sm font-medium text-amber-700 dark:text-amber-300 mr-2 px-3 py-1 bg-amber-100 dark:bg-slate-700 rounded-full border border-amber-400 dark:border-slate-600"
+              class="text-sm font-medium text-amber-700 dark:text-amber-300 px-4 py-2 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-slate-700 dark:to-slate-800 rounded-full border border-amber-400 dark:border-slate-600 shadow-md transition transform hover:scale-105"
             >
               Welcome, {{ authStore.user.username }}!
             </p>
@@ -109,11 +111,11 @@
                 v-if="authStore.user && authStore.user.profile_image"
                 :src="authStore.user.profile_image"
                 alt="Profile"
-                class="h-10 w-10 rounded-full border-2 border-amber-400 object-cover hover:border-amber-500 transition-all duration-300"
+                class="h-10 w-10 rounded-full border-2 border-amber-400 object-cover hover:border-amber-500 transition-all duration-300 shadow-md"
               />
               <div
                 v-else
-                class="h-10 w-10 rounded-full bg-amber-300 flex items-center justify-center text-amber-900 text-xl font-bold border-2 border-amber-400"
+                class="h-10 w-10 rounded-full bg-amber-300 flex items-center justify-center text-amber-900 text-xl font-bold border-2 border-amber-400 shadow-md"
               >
                 {{ authStore.user?.username[0].toUpperCase() }}
               </div>
@@ -219,7 +221,7 @@
     <div v-if="isMobileMenuOpen" class="px-4 pb-4 lg:hidden">
       <div
         v-if="authStore.isAuthenticated"
-        class="mb-3 px-4 py-2 bg-amber-100 dark:bg-slate-700 rounded-lg border border-amber-200 dark:border-slate-600"
+        class="mb-3 px-4 py-2 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-slate-700 dark:to-slate-800 rounded-lg border border-amber-200 dark:border-slate-600"
       >
         <router-link
           v-if="authStore.isAuthenticated && authStore.user"
