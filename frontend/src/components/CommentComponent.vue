@@ -35,10 +35,19 @@
           class="relative p-4 rounded-3xl bg-amber-50 dark:bg-slate-700/70 shadow-lg"
         >
           <!-- User & Date -->
-          <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
-            <strong class="text-amber-700 dark:text-amber-300">
-              {{ comment.user.username }}
-            </strong>
+
+          <p class="text- text-gray-600 dark:text-gray-300 mb-2">
+            <router-link
+              :to="{
+                name: 'public-profile',
+                params: { username: comment.user.username },
+              }"
+              class="text-amber-700 dark:text-amber-200 hover:underline"
+            >
+              <strong class="text-amber-700 dark:text-amber-300">
+                {{ comment.user.username }}
+              </strong>
+            </router-link>
             • {{ formatDate(comment.created) }}
           </p>
 

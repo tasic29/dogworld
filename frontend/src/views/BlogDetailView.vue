@@ -10,8 +10,18 @@
           <h1 class="text-3xl font-bold text-amber-700 dark:text-amber-300">
             {{ blog.title }}
           </h1>
-          <p class="text-gray-500 text-sm dark:text-gray-400">
-            By {{ blog.author.username }} • {{ formatDate(blog.created) }}
+          <p class="text-gray-500 text-md dark:text-gray-400">
+            By
+            <router-link
+              :to="{
+                name: 'public-profile',
+                params: { username: blog.author.username },
+              }"
+              class="font-semibold text-amber-600 dark:text-amber-200 hover:underline"
+            >
+              {{ blog.author.username }}
+            </router-link>
+            • {{ formatDate(blog.created) }}
           </p>
           <img
             v-if="blog.image"
@@ -75,10 +85,12 @@ import CommentComponent from "../components/CommentComponent.vue";
 import RatingComponent from "../components/RatingComponent.vue";
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
+import { useAuthStore } from "../stores/auth";
 import axios from "axios";
 import MarkdownIt from "markdown-it";
 
 const route = useRoute();
+const auth = useAuthStore();
 const blog = ref(null);
 const md = new MarkdownIt();
 

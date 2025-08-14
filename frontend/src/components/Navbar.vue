@@ -86,12 +86,19 @@
           </router-link>
         </template>
         <template v-else>
-          <p
+          <router-link
             v-if="authStore.isAuthenticated && authStore.user"
-            class="text-sm font-medium text-amber-700 dark:text-amber-300 mr-2 px-3 py-1 bg-amber-100 dark:bg-slate-700 rounded-full border border-amber-400 dark:border-slate-600"
+            :to="{
+              name: 'public-profile',
+              params: { username: authStore.user.username },
+            }"
           >
-            Welcome, {{ authStore.user.username }}!
-          </p>
+            <p
+              class="text-sm font-medium text-amber-700 dark:text-amber-300 mr-2 px-3 py-1 bg-amber-100 dark:bg-slate-700 rounded-full border border-amber-400 dark:border-slate-600"
+            >
+              Welcome, {{ authStore.user.username }}!
+            </p>
+          </router-link>
 
           <div class="relative" ref="accountDropdownRef">
             <button
@@ -214,9 +221,17 @@
         v-if="authStore.isAuthenticated"
         class="mb-3 px-4 py-2 bg-amber-100 dark:bg-slate-700 rounded-lg border border-amber-200 dark:border-slate-600"
       >
-        <p class="text-sm font-medium text-amber-700 dark:text-amber-300">
-          🐕 Welcome, {{ authStore.user.username }}!
-        </p>
+        <router-link
+          v-if="authStore.isAuthenticated && authStore.user"
+          :to="{
+            name: 'public-profile',
+            params: { username: authStore.user.username },
+          }"
+        >
+          <p class="text-sm font-medium text-amber-700 dark:text-amber-300">
+            🐕 Welcome, {{ authStore.user.username }}!
+          </p>
+        </router-link>
       </div>
 
       <ul class="space-y-2">

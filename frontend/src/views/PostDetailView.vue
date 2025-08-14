@@ -11,8 +11,18 @@
           <h1 class="text-3xl font-bold text-amber-700 dark:text-amber-300">
             {{ post.title }}
           </h1>
-          <p class="text-gray-500 text-sm dark:text-gray-400">
-            By {{ post.author.username }} • {{ formatDate(post.created_at) }}
+          <p class="text-gray-500 text-md dark:text-gray-400">
+            By
+            <router-link
+              :to="{
+                name: 'public-profile',
+                params: { username: post.author.username },
+              }"
+              class="font-semibold text-amber-600 dark:text-amber-200 hover:underline"
+            >
+              {{ post.author.username }}
+            </router-link>
+            • {{ formatDate(post.created_at) }}
           </p>
           <img
             v-if="post.image"
