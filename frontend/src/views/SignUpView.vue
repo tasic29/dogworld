@@ -296,7 +296,7 @@ const submitForm = async () => {
     });
 
     toast.success("Welcome to the pack! Account created and logged in! 🐶");
-    router.push("/");
+    router.push("account");
   } catch (error) {
     console.error("Registration error:", error);
 

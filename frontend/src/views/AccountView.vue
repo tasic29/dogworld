@@ -333,9 +333,11 @@ import { reactive, ref, onMounted } from "vue";
 import axios from "axios";
 import { useToast } from "vue-toastification";
 import { useAuthStore } from "../stores/auth";
+import { useRouter } from "vue-router";
 
 const toast = useToast();
 const authStore = useAuthStore();
+const router = useRouter();
 const previewImage = ref(null);
 
 const form = reactive({
@@ -423,6 +425,7 @@ const updateProfile = async () => {
     userInfo.value.profile_image = refreshed.data.profile_image;
 
     toast.success("Pack profile updated successfully! 🐶");
+    router.push({ name: "home" });
   } catch (error) {
     console.error("Profile update error:", error);
     if (error.response?.data) {
