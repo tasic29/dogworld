@@ -8,13 +8,22 @@
       >
         <!-- Header with dog theme -->
         <div class="text-center mb-8">
-          <div
-            class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full mb-4 shadow-lg"
-          >
-            <span class="text-2xl">🐕‍🦺</span>
+          <div class="text-center mb-6">
+            <div class="relative inline-block">
+              <img
+                v-if="userInfo.profile_image"
+                :src="userInfo.profile_image"
+                alt="Profile Image"
+                class="w-20 h-20 rounded-full object-cover border-4 border-amber-200 shadow-lg"
+              />
+              <div
+                v-else
+                class="w-20 h-20 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 flex items-center justify-center border-4 border-amber-200 shadow-lg"
+              ></div>
+            </div>
           </div>
           <h2
-            class="text-3xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-300 animate-bounce delay-100"
+            class="text-3xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-300"
           >
             Pack Member Profile
           </h2>
@@ -153,6 +162,62 @@
               {{ errors.location }}
             </div>
           </div>
+          <!-- Profile Image Field -->
+          <!-- Profile Image Field -->
+          <div class="group">
+            <label
+              class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+            >
+              <span class="mr-2">📸</span>
+              Profile Image
+            </label>
+
+            <!-- Clickable Image Container -->
+            <label
+              for="profile_image"
+              class="relative group cursor-pointer inline-block"
+            >
+              <!-- Image Preview -->
+              <img
+                v-if="previewImage"
+                :src="previewImage"
+                alt="Profile Preview"
+                class="w-24 h-24 rounded-full object-cover border-4 border-amber-200 shadow-lg transition-transform duration-300 group-hover:scale-105"
+              />
+
+              <!-- Placeholder if no image -->
+              <div
+                v-else
+                class="w-24 h-24 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 flex items-center justify-center border-4 border-amber-200 shadow-lg text-white text-2xl transition-transform duration-300 group-hover:scale-105"
+              >
+                🐕
+              </div>
+
+              <!-- Overlay on hover -->
+              <div
+                class="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              >
+                <span class="text-white text-sm font-medium">Change</span>
+              </div>
+            </label>
+
+            <!-- Hidden File Input -->
+            <input
+              type="file"
+              id="profile_image"
+              accept="image/*"
+              @change="handleImageUpload"
+              class="hidden"
+            />
+
+            <div
+              v-if="errors.profile_image"
+              class="mt-2 text-sm text-red-500 flex items-center"
+            >
+              <span class="mr-1">⚠️</span>
+              {{ errors.profile_image }}
+            </div>
+          </div>
 
           <!-- Submit Button -->
           <div class="flex flex-col sm:flex-row gap-4 pt-6">
@@ -271,6 +336,7 @@ import { useAuthStore } from "../stores/auth";
 
 const toast = useToast();
 const authStore = useAuthStore();
+const previewImage = ref(null);
 
 const form = reactive({
   username: "",
@@ -278,6 +344,7 @@ const form = reactive({
   first_name: "",
   last_name: "",
   location: "",
+  profile_image: null,
 });
 
 const userInfo = ref({
@@ -301,6 +368,14 @@ const formatDate = (dateString) => {
   });
 };
 
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    form.profile_image = file; // store file object
+    previewImage.value = URL.createObjectURL(file); // preview
+  }
+};
+
 const loadUserData = async () => {
   try {
     const response = await axios.get("/auth/users/me/");
@@ -311,11 +386,11 @@ const loadUserData = async () => {
     form.first_name = userData.first_name || "";
     form.last_name = userData.last_name || "";
     form.location = userData.location || "";
+    previewImage.value = userData.profile_image || null; // show current image
 
     userInfo.value.date_joined = userData.date_joined;
     userInfo.value.is_active = userData.is_active;
-
-    // console.log("User data loaded:", userData);
+    userInfo.value.profile_image = userData.profile_image;
   } catch (error) {
     console.error("Error loading user data:", error);
     toast.error("Failed to load profile data 🐕");
@@ -327,44 +402,34 @@ const updateProfile = async () => {
   isUpdating.value = true;
 
   try {
-    const updateData = {
-      username: form.username,
-      email: form.email,
-      first_name: form.first_name,
-      last_name: form.last_name,
-      location: form.location,
-    };
+    const formData = new FormData();
+    formData.append("username", form.username);
+    formData.append("email", form.email);
+    formData.append("first_name", form.first_name);
+    formData.append("last_name", form.last_name);
+    formData.append("location", form.location);
 
-    const response = await axios.patch("/auth/users/me/", updateData);
+    if (form.profile_image instanceof File) {
+      formData.append("profile_image", form.profile_image);
+    }
 
-    console.log("Profile updated successfully:", response.data);
+    await axios.patch("/auth/users/me/", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    // Re-fetch user data to get the latest image URL
+    const refreshed = await axios.get("/auth/users/me/");
+    previewImage.value = refreshed.data.profile_image;
+    userInfo.value.profile_image = refreshed.data.profile_image;
+
     toast.success("Pack profile updated successfully! 🐶");
-
-    // Update the auth store if needed
-    await authStore.fetchUser();
   } catch (error) {
     console.error("Profile update error:", error);
-
-    if (error.response && error.response.data) {
-      const errorData = error.response.data;
-      console.log("Error data:", errorData);
-
-      if (typeof errorData === "object") {
-        errors.value = errorData;
-
-        Object.keys(errorData).forEach((field) => {
-          const fieldError = Array.isArray(errorData[field])
-            ? errorData[field][0]
-            : errorData[field];
-          toast.error(`${field}: ${fieldError} 🐕`);
-        });
-      } else {
-        toast.error("Profile update failed. Please try again. 🐾");
-      }
-    } else if (error.response) {
-      toast.error(`Server error: ${error.response.status} 🦮`);
-    } else if (error.request) {
-      toast.error("Network error. Please check your connection. 🐕‍🦺");
+    if (error.response?.data) {
+      errors.value = error.response.data;
+      Object.keys(error.response.data).forEach((field) => {
+        toast.error(`${field}: ${error.response.data[field][0]} 🐕`);
+      });
     } else {
       toast.error("Something went wrong updating your profile! 🐾");
     }

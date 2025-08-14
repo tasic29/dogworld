@@ -12,9 +12,20 @@ class UserCreateSerializer(BaseUserCreateSerializer):
 
 
 class UserSerializer(BaseUserSerializer):
+    # profile_image = serializers.SerializerMethodField()
+
     class Meta(BaseUserSerializer.Meta):
         fields = ['id', 'username', 'email', 'first_name',
-                  'last_name', 'location', 'date_joined', 'is_active', 'is_staff']
+                  'last_name', 'location', 'date_joined', 'is_active', 'is_staff', 'profile_image']
+
+    def get_profile_image(self, obj):
+        request = self.context.get("request")
+        if obj.profile_image and hasattr(obj.profile_image, 'url'):
+            image_url = obj.profile_image.url
+            if request:
+                return request.build_absolute_uri(image_url)
+            return image_url
+        return None
 
 
 class PublicUserSerializer(serializers.ModelSerializer):
