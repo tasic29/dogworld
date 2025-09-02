@@ -70,6 +70,14 @@
             🐕‍🦺 Services
           </router-link>
         </li>
+        <li>
+          <router-link
+            :to="{ name: 'messages' }"
+            class="flex items-center text-gray-700 dark:text-gray-300 px-3 py-2 rounded-full transition-all hover:bg-amber-100 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-amber-300"
+          >
+            💬 Messages
+          </router-link>
+        </li>
       </ul>
 
       <div class="hidden lg:flex items-center gap-3">
@@ -274,6 +282,12 @@
             >🐕‍🦺 Services</router-link
           >
         </li>
+        <router-link
+          :to="{ name: 'messages' }"
+          class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
+        >
+          💬 Messages
+        </router-link>
         <template v-if="!authStore.isAuthenticated">
           <li>
             <router-link

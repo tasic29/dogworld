@@ -18,6 +18,7 @@ import ServiceCreateView from "@/views/ServiceCreateView.vue";
 import ProductDetailView from "@/views/ProductDetailView.vue";
 import ServiceDetailView from "@/views/ServiceDetailView.vue";
 import PublicProfileView from "@/views/PublicProfileView.vue";
+import MessagesView from "@/views/MessagesView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -129,6 +130,14 @@ const router = createRouter({
       path: "/pack/:username",
       name: "public-profile",
       component: PublicProfileView,
+    },
+    {
+      path: "/messages",
+      name: "messages",
+      component: MessagesView,
+      meta: {
+        requiresAuth: true,
+      },
     },
   ],
 });
