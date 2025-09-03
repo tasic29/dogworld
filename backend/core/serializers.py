@@ -25,7 +25,11 @@ class UserSerializer(BaseUserSerializer):
             if request:
                 return request.build_absolute_uri(image_url)
             return image_url
-        return None
+
+        default_image = 'profile_images/default.webp'
+        if request:
+            return request.build_absolute_uri(default_image)
+        return default_image
 
 
 class PublicUserSerializer(serializers.ModelSerializer):

@@ -15,15 +15,25 @@ User = get_user_model()
 
 
 class MessageUserSerializer(serializers.ModelSerializer):
-    """Serializer for user info in messages"""
+    # Serializer for user info in messages
     full_name = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'full_name']
+        fields = ['id', 'username', 'full_name', 'profile_image']
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip() or obj.username
+
+    def get_profile_image(self, obj):
+        request = self.context.get("request")
+        if obj.profile_image and hasattr(obj.profile_image, 'url'):
+            image_url = obj.profile_image.url
+            if request:
+                return request.build_absolute_uri(image_url)
+            return image_url
+        return None
 
 
 class MessageSerializer(serializers.ModelSerializer):
