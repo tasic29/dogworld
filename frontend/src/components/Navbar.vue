@@ -350,11 +350,15 @@ const notifRef = ref(null);
 
 const fetchNotifications = async () => {
   if (!authStore.isAuthenticated) return;
+
   try {
     const response = await axios.get("/messaging/notifications/");
     notifications.value = response.data.filter((n) => !n.is_read);
   } catch (error) {
-    // toast.error("Failed to fetch notifications");
+    // Only log actual errors, not auth issues
+    if (error.response?.status !== 401) {
+      console.error("Failed to fetch notifications:", error);
+    }
   }
 };
 
@@ -363,23 +367,99 @@ const markAsRead = async (id) => {
     await axios.patch(`/messaging/notifications/${id}/mark_as_read/`);
     notifications.value = notifications.value.filter((n) => n.id !== id);
   } catch (err) {
-    console.error("Error marking notification:", err.response);
-    toast.error("Failed to mark notification as read");
+    console.error("Error marking notification as read:", err);
+
+    if (err.response?.status === 403) {
+      toast.error(
+        "You don't have permission to mark this notification as read"
+      );
+    } else if (err.response?.status === 404) {
+      toast.error("Notification not found");
+      // Remove from local array anyway since it doesn't exist
+      notifications.value = notifications.value.filter((n) => n.id !== id);
+    } else {
+      toast.error("Failed to mark notification as read");
+    }
   }
 };
 
 const handleNotificationClick = async (notif) => {
   try {
     await markAsRead(notif.id);
+    showNotifDropdown.value = false;
+
     if (notif.target_url) {
       router.push(notif.target_url);
     } else {
       toast.info("This notification has no link.");
     }
   } catch (err) {
+    console.error("Failed to handle notification click:", err);
     toast.error("Failed to open notification");
   }
 };
+
+// Also add this to refresh notifications after sending a message
+const refreshNotifications = () => {
+  if (authStore.isAuthenticated) {
+    fetchNotifications();
+  }
+};
+// const fetchNotifications = async () => {
+//   if (!authStore.isAuthenticated) return;
+//   try {
+//     const response = await axios.get("/messaging/notifications/");
+//     notifications.value = response.data.filter((n) => !n.is_read);
+//   } catch (error) {
+//     // toast.error("Failed to fetch notifications");
+//   }
+// };
+
+// const markAsRead = async (id) => {
+//   try {
+//     // Debug logging
+//     console.log("Auth store state:", {
+//       isAuthenticated: authStore.isAuthenticated,
+//       hasJwtToken: !!authStore.jwtToken,
+//       hasUser: !!authStore.user,
+//       userId: authStore.user?.id,
+//       jwtToken: authStore.jwtToken ? "exists" : "missing",
+//     });
+
+//     // Check if axios has the auth header
+//     console.log("Axios default headers:", axios.defaults.headers.common);
+
+//     // Make the request
+//     const response = await axios.patch(
+//       `/messaging/notifications/${id}/mark_as_read/`
+//     );
+//     console.log("Mark as read response:", response.data);
+
+//     notifications.value = notifications.value.filter((n) => n.id !== id);
+//   } catch (err) {
+//     console.error("Error marking notification:", {
+//       status: err.response?.status,
+//       statusText: err.response?.statusText,
+//       data: err.response?.data,
+//       config: err.config,
+//       headers: err.response?.headers,
+//     });
+//     toast.error("Failed to mark notification as read");
+//   }
+// };
+
+// const handleNotificationClick = async (notif) => {
+//   try {
+//     await markAsRead(notif.id);
+//     if (notif.target_url) {
+//       router.push(notif.target_url);
+//     } else {
+//       toast.info("This notification has no link.");
+//     }
+//   } catch (err) {
+//     toast.error("Failed to open notification");
+//   }
+// };
 
 const handleClickOutside = (e) => {
   if (notifRef.value && !notifRef.value.contains(e.target)) {

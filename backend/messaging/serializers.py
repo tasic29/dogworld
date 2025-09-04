@@ -10,8 +10,10 @@ from django.utils import timezone
 from .models import Message
 from core.models import Notification
 from core.utils import create_notification
+import logging
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class MessageUserSerializer(serializers.ModelSerializer):
@@ -69,7 +71,7 @@ class MessageSerializer(serializers.ModelSerializer):
             return "Just now"
 
     def validate_receiver_id(self, value):
-        """Validate receiver exists and is not the sender"""
+        """Validate receiver exists"""
         if not User.objects.filter(id=value).exists():
             raise serializers.ValidationError("Receiver does not exist.")
         return value
@@ -97,18 +99,24 @@ class MessageSerializer(serializers.ModelSerializer):
             **validated_data
         )
 
-        # Create notification
-        sender_name = (
-            f"{message.sender.first_name} {message.sender.last_name}".strip()
-            or message.sender.username
-        )
+        # Only create notification if sender is different from receiver
+        if sender_id != receiver_id:
+            try:
+                sender_name = (
+                    f"{message.sender.first_name} {message.sender.last_name}".strip()
+                    or message.sender.username
+                )
 
-        create_notification(
-            recipient=receiver,
-            notification_type=Notification.NOTIFICATION_TYPE_NEW_MESSAGE,
-            message=f'{sender_name} sent you a new message.',
-            content_object=message
-        )
+                create_notification(
+                    recipient=receiver,
+                    notification_type=Notification.NOTIFICATION_TYPE_NEW_MESSAGE,
+                    message=f'{sender_name} sent you a new message.',
+                    content_object=message
+                )
+            except Exception as e:
+                # Log notification creation errors but don't fail the message creation
+                logger.error(
+                    f"Failed to create notification for message {message.id}: {e}")
 
         return message
 

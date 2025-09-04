@@ -248,7 +248,6 @@ const scrollToBottom = async () => {
 const fetchConversations = async () => {
   try {
     const res = await axios.get("/messaging/messages/conversations/");
-    console.log("Conversations response:", res.data); // Debug log
     conversations.value = mapConversationData(res.data);
   } catch (error) {
     console.error("Failed to fetch conversations:", error);
@@ -276,24 +275,11 @@ const selectConversation = async (conversation) => {
       currentUserId
     );
 
-    // Mark messages as read
-    await markMessagesAsRead(userId);
-
     // Scroll to bottom
     scrollToBottom();
   } catch (error) {
     console.error("Failed to fetch conversation messages:", error);
     messages.value = [];
-  }
-};
-
-const markMessagesAsRead = async (senderId) => {
-  try {
-    await axios.post(`/messaging/messages/mark-read/`, {
-      sender_id: senderId,
-    });
-  } catch (error) {
-    console.error("Failed to mark messages as read:", error);
   }
 };
 

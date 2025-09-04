@@ -1,3 +1,5 @@
+from .serializers import NotificationSerializer, PublicUserSerializer
+from .models import Notification, MyUser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -6,8 +8,9 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework import status
 
-from .models import Notification, MyUser
-from .serializers import NotificationSerializer, PublicUserSerializer
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class PublicUserDetailView(generics.RetrieveAPIView):
@@ -26,6 +29,7 @@ class NotificationViewSet(ModelViewSet):
     serializer_class = NotificationSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering_fields = ['id', 'created_at']
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -35,15 +39,36 @@ class NotificationViewSet(ModelViewSet):
     def get_queryset(self):
         if self.request.user.is_staff:
             return Notification.objects.all()
-
         return Notification.objects.filter(recipient=self.request.user)
 
     @action(detail=True, methods=['patch'])
     def mark_as_read(self, request, pk=None):
-        notification = self.get_object()
-        if notification.recipient == request.user:
+        # Debug logging
+        logger.info(f"User: {request.user}, User ID: {request.user.id}")
+        logger.info(f"Notification ID: {pk}")
+
+        try:
+            notification = self.get_object()
+            logger.info(
+                f"Notification recipient: {notification.recipient}, Recipient ID: {notification.recipient.id}")
+            logger.info(
+                f"User matches recipient: {notification.recipient == request.user}")
+            logger.info(
+                f"User ID matches recipient ID: {notification.recipient.id == request.user.id}")
+        except Exception as e:
+            logger.error(f"Error getting notification: {e}")
+            return Response({'error': 'Notification not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if user has permission to mark this notification as read
+        if notification.recipient.id == request.user.id:
             if not notification.is_read:
                 notification.is_read = True
                 notification.save()
+                logger.info(f"Notification {pk} marked as read successfully")
+            else:
+                logger.info(f"Notification {pk} was already read")
             return Response({'status': 'Notification marked as read'}, status=status.HTTP_200_OK)
-        return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+        else:
+            logger.warning(
+                f"Permission denied - User {request.user.id} tried to mark notification {pk} (recipient: {notification.recipient.id})")
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
