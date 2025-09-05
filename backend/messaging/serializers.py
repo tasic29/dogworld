@@ -23,7 +23,7 @@ class MessageUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'full_name', 'profile_image']
+        fields = ['id', 'username', 'full_name', 'profile_image', 'email']
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip() or obj.username
@@ -55,7 +55,6 @@ class MessageSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'sender', 'is_read', 'sent_at', 'read_at']
 
     def get_time_ago(self, obj):
-        """Human readable time difference"""
         now = timezone.now()
         diff = now - obj.sent_at
 
@@ -71,13 +70,11 @@ class MessageSerializer(serializers.ModelSerializer):
             return "Just now"
 
     def validate_receiver_id(self, value):
-        """Validate receiver exists"""
         if not User.objects.filter(id=value).exists():
             raise serializers.ValidationError("Receiver does not exist.")
         return value
 
     def validate(self, attrs):
-        """Validate sender is not receiver"""
         sender_id = self.context.get('sender_id')
         if sender_id and sender_id == attrs.get('receiver_id'):
             raise serializers.ValidationError(
@@ -93,30 +90,12 @@ class MessageSerializer(serializers.ModelSerializer):
         receiver_id = validated_data.pop('receiver_id')
         receiver = User.objects.get(id=receiver_id)
 
+        # ✅ Only create the message
         message = Message.objects.create(
             sender_id=sender_id,
             receiver=receiver,
             **validated_data
         )
-
-        # Only create notification if sender is different from receiver
-        if sender_id != receiver_id:
-            try:
-                sender_name = (
-                    f"{message.sender.first_name} {message.sender.last_name}".strip()
-                    or message.sender.username
-                )
-
-                create_notification(
-                    recipient=receiver,
-                    notification_type=Notification.NOTIFICATION_TYPE_NEW_MESSAGE,
-                    message=f'{sender_name} sent you a new message.',
-                    content_object=message
-                )
-            except Exception as e:
-                # Log notification creation errors but don't fail the message creation
-                logger.error(
-                    f"Failed to create notification for message {message.id}: {e}")
 
         return message
 

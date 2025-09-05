@@ -72,6 +72,7 @@
         </li>
         <li>
           <router-link
+            v-if="authStore.isAuthenticated"
             :to="{ name: 'messages' }"
             class="flex items-center text-gray-700 dark:text-gray-300 px-3 py-2 rounded-full transition-all hover:bg-amber-100 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-amber-300"
           >

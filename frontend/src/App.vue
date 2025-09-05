@@ -6,8 +6,14 @@
 </template>
 
 <script setup>
-import { RouterLink, RouterView } from "vue-router";
+import { onMounted } from "vue";
+import { useAuthStore } from "./stores/auth"; // ✅ make sure path is correct
 import Navbar from "./components/Navbar.vue";
-</script>
 
-<style scoped></style>
+onMounted(() => {
+  const auth = useAuthStore();
+  if (auth.jwtToken && !auth.user) {
+    auth.fetchUser();
+  }
+});
+</script>

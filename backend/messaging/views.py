@@ -1,3 +1,4 @@
+from django.db.models.functions import Greatest, Least
 from core.pagination import DefaultPagination
 from core.permissions import MessagePermission
 from .serializers import MessageSerializer
@@ -97,41 +98,53 @@ class MessageViewSet(ModelViewSet):
         """Get all conversations for the current user"""
         user = request.user
 
-        # Get latest message for each conversation
+        # Get distinct conversation pairs with latest activity
+        conversations = (
+            Message.objects.filter(Q(sender=user) | Q(receiver=user))
+            .exclude(
+                Q(sender=user, is_deleted_by_sender=True) |
+                Q(receiver=user, is_deleted_by_receiver=True)
+            )
+            .annotate(
+                user1=Least('sender_id', 'receiver_id'),
+                user2=Greatest('sender_id', 'receiver_id'),
+            )
+            .values('user1', 'user2')
+            .annotate(last_activity=Max('sent_at'))
+            .order_by('-last_activity')
+        )
+
         conversations_data = []
+        for conv in conversations:
+            # figure out the "other participant"
+            other_id = conv['user1'] if conv['user1'] != user.id else conv['user2']
+            participant = User.objects.get(id=other_id)
 
-        # Find all users the current user has exchanged messages with
-        participants = User.objects.filter(
-            Q(sent_messages__receiver=user, sent_messages__is_deleted_by_receiver=False) |
-            Q(received_messages__sender=user,
-              received_messages__is_deleted_by_sender=False)
-        ).distinct()
+            # get latest message in this conversation
+            latest_message = (
+                Message.objects.filter(
+                    Q(sender=user, receiver=participant, is_deleted_by_sender=False) |
+                    Q(sender=participant, receiver=user,
+                      is_deleted_by_receiver=False)
+                )
+                .order_by('-sent_at')
+                .first()
+            )
 
-        for participant in participants:
-            # Get the latest message in conversation
-            latest_message = Message.objects.filter(
-                Q(sender=user, receiver=participant, is_deleted_by_sender=False) |
-                Q(sender=participant, receiver=user, is_deleted_by_receiver=False)
-            ).order_by('-sent_at').first()
+            # count unread messages
+            unread_count = Message.objects.filter(
+                sender=participant,
+                receiver=user,
+                is_read=False,
+                is_deleted_by_receiver=False
+            ).count()
 
-            if latest_message:
-                # Count unread messages from this participant
-                unread_count = Message.objects.filter(
-                    sender=participant,
-                    receiver=user,
-                    is_read=False,
-                    is_deleted_by_receiver=False
-                ).count()
-
-                conversations_data.append({
-                    'participant': participant,
-                    'latest_message': latest_message,
-                    'unread_count': unread_count,
-                    'last_activity': latest_message.sent_at
-                })
-
-        # Sort by last activity
-        conversations_data.sort(key=lambda x: x['last_activity'], reverse=True)
+            conversations_data.append({
+                'participant': participant,
+                'latest_message': latest_message,
+                'unread_count': unread_count,
+                'last_activity': conv['last_activity']
+            })
 
         serializer = ConversationSerializer(conversations_data, many=True)
         return Response(serializer.data)
