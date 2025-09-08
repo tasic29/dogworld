@@ -390,7 +390,21 @@ const handleNotificationClick = async (notif) => {
     showNotifDropdown.value = false;
 
     if (notif.target_url) {
-      router.push(notif.target_url);
+      // Check if the URL is a message URL
+      const regex = /^\/messages\/conversation\/\?user_id=(\d+)$/;
+      const match = notif.target_url.match(regex);
+
+      if (match) {
+        const userId = match[1];
+        // Use router.push with a named route and parameters
+        router.push({
+          name: "messages",
+          params: { userId: userId },
+        });
+      } else {
+        // Fallback for other types of notifications
+        router.push(notif.target_url);
+      }
     } else {
       toast.info("This notification has no link.");
     }

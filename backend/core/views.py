@@ -1,6 +1,11 @@
+from .models import MyUser  # Assuming MyUser is your custom user model
+from .serializers import PublicUserSerializer
 from .serializers import NotificationSerializer, PublicUserSerializer
 from .models import Notification, MyUser
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -11,6 +16,43 @@ from rest_framework import status
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def search_users(request):
+    """
+    Search for users by username, email, first_name, or last_name
+    """
+    query = request.GET.get('query', '').strip()
+
+    # Minimum 3 characters required
+    if len(query) < 3:
+        return Response({
+            'results': [],
+            'message': 'Please enter at least 3 characters to search.'
+        })
+
+    # Search across multiple fields using '__icontains'
+    users = MyUser.objects.filter(
+        Q(username__icontains=query) |
+        Q(email__icontains=query) |
+        Q(first_name__icontains=query) |
+        Q(last_name__icontains=query)
+    ).filter(
+        is_active=True  # Only return active users
+    ).exclude(
+        id=request.user.id  # Exclude the current user
+    ).distinct()[:20]  # Limit to 20 results
+
+    # Serialize the results
+    serializer = PublicUserSerializer(
+        users, many=True, context={'request': request})
+
+    return Response({
+        'results': serializer.data,
+        'count': len(serializer.data)
+    })
 
 
 class PublicUserDetailView(generics.RetrieveAPIView):

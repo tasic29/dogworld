@@ -280,108 +280,99 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, computed, watch } from "vue";
-import UserSearchModal from "../components/UserSearchModal.vue";
-import { useAuthStore } from "../stores/auth";
+import { ref, computed, watch, onMounted, nextTick } from "vue";
+import { useRoute } from "vue-router";
+import { useToast } from "vue-toastification";
 import axios from "axios";
 
-// State variables
+import UserSearchModal from "../components/UserSearchModal.vue";
+import { useAuthStore } from "../stores/auth";
+
+// 🔧 Setup
+const toast = useToast();
+const route = useRoute();
+const authStore = useAuthStore();
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+// 🔧 State
 const conversations = ref([]);
 const messages = ref([]);
 const newMessage = ref("");
 const selectedConversation = ref(null);
-const sending = ref(false);
+
 const loadingConversations = ref(false);
 const loadingMessages = ref(false);
-const messagesContainer = ref(null);
-const error = ref("");
-const success = ref("");
+const sending = ref(false);
 const totalUnreadCount = ref(0);
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const authStore = useAuthStore();
+const error = ref("");
+const success = ref("");
+const showSearchModal = ref(false);
+const messagesContainer = ref(null);
 
-// Computed properties
+// 🔧 Computed
 const currentUserId = computed(() => authStore.user?.id ?? null);
 
-const showSearchModal = ref(false);
-// Utility functions
-const handleSelectUser = async (user) => {
-  showSearchModal.value = false;
-  await fetchConversations();
-  const newConv = conversations.value.find(
-    (conv) => conv.participant.id === user.id
-  );
-  if (newConv) {
-    await selectConversation(newConv);
-  }
-  showSuccess(`Conversation with ${getDisplayName(user)} started!`);
-};
+// ==============
+// Utility funcs
+// ==============
 const handleImageError = (event) => {
-  event.target.src = "/default-avatar.png";
+  event.target.src = `${API_BASE_URL}/media/profile_images/default.webp`;
 };
 
-const getAvatarUrl = (participant) => {
-  if (!participant?.profile_image) {
-    return `${API_BASE_URL}/media/profile_images/default.webp`;
-  }
-  return participant.profile_image.startsWith("http")
-    ? participant.profile_image
-    : `${API_BASE_URL}${participant.profile_image}`;
-};
+const getAvatarUrl = (user) =>
+  user?.profile_image
+    ? user.profile_image.startsWith("http")
+      ? user.profile_image
+      : `${API_BASE_URL}${user.profile_image}`
+    : `${API_BASE_URL}/media/profile_images/default.webp`;
 
-const getDisplayName = (participant) => {
-  if (!participant) return "Unknown User";
-  return (
-    participant.full_name ||
-    `${participant.first_name || ""} ${participant.last_name || ""}`.trim() ||
-    participant.username ||
-    "Unknown User"
-  );
-};
+const getDisplayName = (user) =>
+  user?.full_name ||
+  `${user?.first_name || ""} ${user?.last_name || ""}`.trim() ||
+  user?.username ||
+  "Unknown User";
 
-const getLastMessagePreview = (message) => {
-  if (!message) return "No messages yet";
-  return message.content?.length > 50
-    ? `${message.content.substring(0, 50)}...`
-    : message.content;
-};
+const getLastMessagePreview = (msg) =>
+  msg?.content
+    ? msg.content.length > 50
+      ? msg.content.substring(0, 50) + "..."
+      : msg.content
+    : "No messages yet";
 
-const isSelected = (conversation) => {
-  return (
-    selectedConversation.value?.participant?.id === conversation.participant?.id
-  );
-};
+const isSelected = (conv) =>
+  selectedConversation.value?.participant?.id === conv.participant?.id;
 
 const formatTime = (timestamp) => {
   if (!timestamp) return "";
   const date = new Date(timestamp);
-  const now = new Date();
-  const diffInHours = (now - date) / (1000 * 60 * 60);
-
-  if (diffInHours < 1) return "Just now";
-  if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`;
-  if (diffInHours < 48) return "Yesterday";
+  const diffHrs = (Date.now() - date) / (1000 * 60 * 60);
+  if (diffHrs < 1) return "Just now";
+  if (diffHrs < 24) return `${Math.floor(diffHrs)}h ago`;
+  if (diffHrs < 48) return "Yesterday";
   return date.toLocaleDateString();
 };
 
-const formatMessageTime = (timestamp) => {
-  if (!timestamp) return "";
-  const date = new Date(timestamp);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-};
+const formatMessageTime = (timestamp) =>
+  timestamp
+    ? new Date(timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "";
 
-const showError = (message) => {
-  error.value = message;
+// UI feedback
+const showError = (msg) => {
+  error.value = msg;
   setTimeout(() => (error.value = ""), 5000);
 };
-
-const showSuccess = (message) => {
-  success.value = message;
+const showSuccess = (msg) => {
+  success.value = msg;
   setTimeout(() => (success.value = ""), 3000);
 };
 
-// Auto-scroll to bottom
+// Scroll
 const scrollToBottom = async () => {
   await nextTick();
   if (messagesContainer.value) {
@@ -389,11 +380,13 @@ const scrollToBottom = async () => {
   }
 };
 
+// ==============
 // API functions
+// ==============
 const fetchUnreadCount = async () => {
   try {
-    const res = await axios.get("/messaging/messages/unread_count/");
-    totalUnreadCount.value = res.data.unread_count;
+    const { data } = await axios.get("/messaging/messages/unread_count/");
+    totalUnreadCount.value = data.unread_count;
   } catch (err) {
     console.error("Failed to fetch unread count:", err);
   }
@@ -402,16 +395,13 @@ const fetchUnreadCount = async () => {
 const fetchConversations = async () => {
   loadingConversations.value = true;
   try {
-    const res = await axios.get("/messaging/messages/conversations/");
-    conversations.value = res.data || [];
+    const { data } = await axios.get("/messaging/messages/conversations/");
+    conversations.value = data || [];
     await fetchUnreadCount();
   } catch (err) {
     console.error("Failed to fetch conversations:", err);
     showError("Failed to load conversations");
-    if (err.response?.status === 401) {
-      // Handle authentication error
-      authStore.logout();
-    }
+    if (err.response?.status === 401) authStore.logout();
   } finally {
     loadingConversations.value = false;
   }
@@ -419,81 +409,60 @@ const fetchConversations = async () => {
 
 const selectConversation = async (conversation) => {
   if (isSelected(conversation)) return;
-
   selectedConversation.value = conversation;
   loadingMessages.value = true;
 
   try {
     const userId = conversation.participant.id;
-    const res = await axios.get(
+    const { data } = await axios.get(
       `/messaging/messages/conversation/?user_id=${userId}`
     );
-
-    const messageData = res.data.results || res.data;
-    messages.value = messageData.map((message) => ({
-      ...message,
-      isReceived: message.sender.id !== currentUserId.value,
+    const results = data.results || data;
+    messages.value = results.map((m) => ({
+      ...m,
+      isReceived: m.sender.id !== currentUserId.value,
     }));
 
-    // Update conversation unread count locally
     conversation.unread_count = 0;
     await fetchUnreadCount();
-
     scrollToBottom();
   } catch (err) {
-    console.error("Failed to fetch conversation messages:", err);
+    console.error("Failed to fetch messages:", err);
     showError("Failed to load messages");
     messages.value = [];
   } finally {
     loadingMessages.value = false;
   }
 };
-watch(messages, () => scrollToBottom());
 
 const sendMessage = async () => {
-  if (
-    !newMessage.value.trim() ||
-    !selectedConversation.value ||
-    sending.value
-  ) {
+  if (!newMessage.value.trim() || !selectedConversation.value || sending.value)
     return;
-  }
 
-  const messageContent = newMessage.value.trim();
   sending.value = true;
+  const content = newMessage.value.trim();
 
   try {
-    const response = await axios.post("/messaging/messages/", {
+    const { data } = await axios.post("/messaging/messages/", {
       receiver_id: selectedConversation.value.participant.id,
-      content: messageContent,
+      content,
     });
 
-    // Add message to local state immediately
-    const newMsg = {
-      ...response.data,
-      isReceived: false,
-    };
-    messages.value.push(newMsg);
-
-    // Clear input and scroll
+    messages.value.push({ ...data, isReceived: false });
     newMessage.value = "";
     scrollToBottom();
 
-    // Update conversations list
     await fetchConversations();
   } catch (err) {
-    console.error("Failed to send message:", err);
-    console.error("Error response:", err.response?.data);
-    console.error("Error status:", err.response?.status);
-
-    const errorMsg =
+    console.error("Send failed:", err.response?.data);
+    const msg =
       err.response?.data?.detail ||
       err.response?.data?.message ||
       Object.values(err.response?.data || {})
         .flat()
         .join(", ") ||
-      "Failed to send message. Please try again.";
-    showError(errorMsg);
+      "Failed to send message.";
+    showError(msg);
   } finally {
     sending.value = false;
   }
@@ -501,78 +470,91 @@ const sendMessage = async () => {
 
 const markConversationAsRead = async () => {
   if (!selectedConversation.value) return;
-
   try {
     await axios.post("/messaging/messages/mark_conversation_as_read/", {
       user_id: selectedConversation.value.participant.id,
     });
-
-    // Update local state
     selectedConversation.value.unread_count = 0;
-    messages.value.forEach((msg) => {
-      if (msg.isReceived) msg.is_read = true;
+    messages.value.forEach((m) => {
+      if (m.isReceived) m.is_read = true;
     });
-
     await fetchUnreadCount();
     showSuccess("Conversation marked as read");
   } catch (err) {
-    console.error("Failed to mark conversation as read:", err);
+    console.error("Failed to mark as read:", err);
     showError("Failed to mark conversation as read");
   }
 };
 
 const deleteConversation = async () => {
   if (!selectedConversation.value) return;
-
-  if (!confirm("Are you sure you want to delete this conversation?")) {
-    return;
-  }
+  if (!confirm("Are you sure you want to delete this conversation?")) return;
 
   try {
     await axios.delete("/messaging/messages/delete_conversation/", {
       data: { user_id: selectedConversation.value.participant.id },
     });
-
-    // Remove from local state
     conversations.value = conversations.value.filter(
-      (conv) =>
-        conv.participant.id !== selectedConversation.value.participant.id
+      (c) => c.participant.id !== selectedConversation.value.participant.id
     );
     selectedConversation.value = null;
     messages.value = [];
-
     await fetchUnreadCount();
     showSuccess("Conversation deleted");
   } catch (err) {
-    console.error("Failed to delete conversation:", err);
+    console.error("Delete failed:", err);
     showError("Failed to delete conversation");
   }
 };
 
-const handleScroll = (event) => {
-  // Could implement infinite scroll for older messages here
-  const { scrollTop } = event.target;
-  if (scrollTop === 0) {
-    // Load older messages if needed
-    console.log("Reached top - could load older messages");
+// ==============
+// Search modal
+// ==============
+const handleSelectUser = async (user) => {
+  let conv = conversations.value.find((c) => c.participant.id === user.id);
+
+  if (conv) {
+    selectedConversation.value = conv;
+    toast.success(`Conversation with ${getDisplayName(user)} selected!`);
+  } else {
+    conv = { participant: user, latest_message: null, unread_count: 0 };
+    selectedConversation.value = conv;
+    messages.value = [];
+    showSuccess(`Conversation with ${getDisplayName(user)} started!`);
+  }
+
+  showSearchModal.value = false;
+  await nextTick();
+  scrollToBottom();
+};
+
+// ==============
+// Route handling
+// ==============
+const openConversationByUserId = async (userId) => {
+  const conv = conversations.value.find(
+    (c) => c.participant.id.toString() === userId
+  );
+  if (conv) {
+    await selectConversation(conv);
+  } else {
+    console.warn("No conversation found for user", userId);
   }
 };
 
-// Auto-dismiss toasts
-watch(error, (newError) => {
-  if (newError) {
-    setTimeout(() => (error.value = ""), 5000);
+onMounted(async () => {
+  await fetchConversations();
+  if (route.params.userId) {
+    await openConversationByUserId(route.params.userId);
   }
 });
 
-watch(success, (newSuccess) => {
-  if (newSuccess) {
-    setTimeout(() => (success.value = ""), 3000);
+watch(
+  () => route.params.userId,
+  async (newUserId) => {
+    if (newUserId) await openConversationByUserId(newUserId);
   }
-});
+);
 
-// Initialize
-onMounted(() => {
-  fetchConversations();
-});
+watch(messages, () => scrollToBottom());
 </script>

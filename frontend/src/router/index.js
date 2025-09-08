@@ -132,7 +132,7 @@ const router = createRouter({
       component: PublicProfileView,
     },
     {
-      path: "/messages",
+      path: "/messages/:userId?",
       name: "messages",
       component: MessagesView,
       meta: {

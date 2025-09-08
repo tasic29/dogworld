@@ -114,6 +114,15 @@
         >
           {{ error }}
         </div>
+
+        <!-- Debug Info (remove in production) -->
+        <div
+          v-if="searchQuery.length > 0"
+          class="mt-4 text-xs text-gray-400 border-t pt-2"
+        >
+          Debug: Query="{{ searchQuery }}", Results={{ searchResults.length }},
+          Loading={{ loading }}
+        </div>
       </div>
     </div>
   </Transition>
@@ -146,6 +155,9 @@ const searchQuery = ref("");
 const searchResults = ref([]);
 const loading = ref(false);
 const error = ref("");
+let debounceTimer = null;
+
+// Note: axios base URL is already configured globally in main.js
 
 // Utility functions
 const handleImageError = (event) => {
@@ -177,24 +189,37 @@ const searchUsers = async () => {
     searchResults.value = [];
     return;
   }
+
   loading.value = true;
   error.value = "";
 
   try {
+    console.log("Searching for:", searchQuery.value); // Debug log
     const res = await axios.get(
       `/users/search/?query=${encodeURIComponent(searchQuery.value)}`
     );
+    console.log("Search response:", res.data); // Debug log
+
     // Filter out the current user from the results
-    searchResults.value = res.data.results.filter(
-      (user) => user.id !== props.currentUserId
-    );
+    searchResults.value = res.data.results
+      ? res.data.results.filter((user) => user.id !== props.currentUserId)
+      : [];
   } catch (err) {
     console.error("User search failed:", err);
+    console.error("Error details:", err.response?.data); // More debug info
     error.value = err.response?.data?.detail || "Failed to search for users.";
     searchResults.value = [];
   } finally {
     loading.value = false;
   }
+};
+
+// Debounced search handler
+const handleSearch = () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    searchUsers();
+  }, 300); // 300ms debounce
 };
 
 // Watch for modal visibility to reset state when it's opened
@@ -208,6 +233,17 @@ watch(
     }
   }
 );
+
+// Cleanup debounce timer
+const cleanup = () => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+  }
+};
+
+// Vue 3 lifecycle
+import { onUnmounted } from "vue";
+onUnmounted(cleanup);
 </script>
 
 <style scoped>
