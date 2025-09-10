@@ -135,6 +135,7 @@ const router = createRouter({
       path: "/messages/:userId?",
       name: "messages",
       component: MessagesView,
+      props: true,
       meta: {
         requiresAuth: true,
       },

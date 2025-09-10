@@ -2,14 +2,6 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework import serializers
 from .models import Message
-from core.models import Notification
-from core.utils import create_notification
-from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-from .models import Message
-from core.models import Notification
-from core.utils import create_notification
 import logging
 
 User = get_user_model()

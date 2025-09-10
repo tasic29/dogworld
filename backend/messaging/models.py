@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
-from django.db.models import Q, Max, Count, Case, When, IntegerField, F
+from django.db.models import Q, Max, Count, Case, When, IntegerField
 
 
 from .validators import validate_file_extension, validate_file_size
@@ -138,7 +138,11 @@ class Message(models.Model):
 
     class Meta:
         ordering = ['-sent_at']
-        indexes = [
-            models.Index(fields=['sender', 'receiver', '-sent_at']),
-            models.Index(fields=['receiver', 'is_read']),
-        ]
+
+    indexes = [
+        models.Index(fields=['sender', 'receiver', '-sent_at']),
+        models.Index(fields=['receiver', 'is_read', '-sent_at']),
+        models.Index(fields=['is_deleted_by_sender',
+                     'is_deleted_by_receiver']),
+        models.Index(fields=['receiver', 'is_deleted_by_receiver']),
+    ]

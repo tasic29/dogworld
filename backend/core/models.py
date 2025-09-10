@@ -68,6 +68,7 @@ class Notification(models.Model):
 
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    extra_data = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
         return f'{self.get_notification_type_display()} for {self.recipient.username}'

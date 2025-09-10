@@ -1,7 +1,7 @@
-from django.db.models.functions import Greatest, Least
-from core.pagination import DefaultPagination
-from core.permissions import MessagePermission
-from .serializers import MessageSerializer
+import logging
+from django.db import transaction
+from django.db.models import Q, F, Case, When
+from django.db import models
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,15 +10,15 @@ from rest_framework.exceptions import MethodNotAllowed, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from django.db.models import Q, Max
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from .models import Message
-from .serializers import MessageSerializer, ConversationSerializer
-from .permissions import MessagePermission
+from .serializers import MessageSerializer, MessageUserSerializer, ConversationSerializer
 from core.pagination import DefaultPagination
+from core.permissions import MessagePermission
 
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
@@ -29,7 +29,7 @@ class MessageViewSet(ModelViewSet):
     search_fields = ['content']
     ordering_fields = ['id', 'sent_at']
     permission_classes = [IsAuthenticated, MessagePermission]
-    pagination_class = DefaultPagination
+    # pagination_class = DefaultPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -95,58 +95,38 @@ class MessageViewSet(ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def conversations(self, request):
-        """Get all conversations for the current user"""
+        """Get all conversations for the current user - OPTIMIZED"""
         user = request.user
 
-        # Get distinct conversation pairs with latest activity
-        conversations = (
-            Message.objects.filter(Q(sender=user) | Q(receiver=user))
-            .exclude(
-                Q(sender=user, is_deleted_by_sender=True) |
-                Q(receiver=user, is_deleted_by_receiver=True)
-            )
-            .annotate(
-                user1=Least('sender_id', 'receiver_id'),
-                user2=Greatest('sender_id', 'receiver_id'),
-            )
-            .values('user1', 'user2')
-            .annotate(last_activity=Max('sent_at'))
-            .order_by('-last_activity')
-        )
+        # Get conversations using the optimized manager method
+        conversations_data = Message.objects.get_user_conversations(user)
 
-        conversations_data = []
-        for conv in conversations:
-            # figure out the "other participant"
-            other_id = conv['user1'] if conv['user1'] != user.id else conv['user2']
-            participant = User.objects.get(id=other_id)
+        # Bulk fetch all participant users to avoid N+1 queries
+        participant_ids = [conv['other_user_id']
+                           for conv in conversations_data]
+        participants = User.objects.in_bulk(participant_ids)
 
-            # get latest message in this conversation
-            latest_message = (
-                Message.objects.filter(
-                    Q(sender=user, receiver=participant, is_deleted_by_sender=False) |
-                    Q(sender=participant, receiver=user,
-                      is_deleted_by_receiver=False)
-                )
-                .order_by('-sent_at')
-                .first()
-            )
+        # Bulk fetch latest messages
+        latest_message_ids = [conv['latest_message_id']
+                              for conv in conversations_data]
+        latest_messages = Message.objects.select_related(
+            'sender', 'receiver').in_bulk(latest_message_ids)
 
-            # count unread messages
-            unread_count = Message.objects.filter(
-                sender=participant,
-                receiver=user,
-                is_read=False,
-                is_deleted_by_receiver=False
-            ).count()
+        result = []
+        for conv in conversations_data:
+            participant = participants.get(conv['other_user_id'])
+            latest_message = latest_messages.get(conv['latest_message_id'])
 
-            conversations_data.append({
-                'participant': participant,
-                'latest_message': latest_message,
-                'unread_count': unread_count,
-                'last_activity': conv['last_activity']
-            })
+            if participant:  # Safety check
+                result.append({
+                    'participant': participant,
+                    'latest_message': latest_message,
+                    'unread_count': conv['unread_count'],
+                    'last_activity': conv['last_activity']
+                })
 
-        serializer = ConversationSerializer(conversations_data, many=True)
+        serializer = ConversationSerializer(
+            result, many=True, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
@@ -167,23 +147,18 @@ class MessageViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        messages = Message.objects.get_conversation(request.user, other_user)
-
-        # Mark messages as read if they were sent to current user
-        unread_messages = messages.filter(
-            receiver=request.user,
-            is_read=False
-        )
-        for message in unread_messages:
-            message.mark_as_read()
+        # Order messages by 'sent_at' in descending order
+        messages_qs = Message.objects.get_conversation(
+            request.user, other_user).order_by('sent_at')
 
         # Paginate the results
-        page = self.paginate_queryset(messages)
+        page = self.paginate_queryset(messages_qs)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            # Reverse the order for the frontend to display chronologically
+            return self.get_paginated_response(serializer.data[::-1])
 
-        serializer = self.get_serializer(messages, many=True)
+        serializer = self.get_serializer(messages_qs, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
@@ -226,3 +201,66 @@ class MessageViewSet(ModelViewSet):
         return Response({
             'status': f'{updated} messages marked as read'
         })
+
+    @action(detail=False, methods=['post'], url_path='delete_conversation')
+    def delete_conversation(self, request):
+        """
+        Marks all messages in a conversation as deleted for the current user.
+        If messages are deleted by both participants, they are permanently removed.
+        """
+        other_user_id = request.data.get('user_id')
+        user = request.user
+
+        if not other_user_id:
+            return Response(
+                {'error': 'user_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Verify the other user exists
+            User.objects.get(id=other_user_id)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Use transaction for atomicity
+        with transaction.atomic():
+            # Get conversation messages
+            conversation_messages = Message.objects.filter(
+                Q(sender=user, receiver_id=other_user_id) |
+                Q(sender_id=other_user_id, receiver=user)
+            )
+
+            # Update deletion flags
+            updated = conversation_messages.update(
+                is_deleted_by_sender=Case(
+                    When(sender=user, then=True),
+                    default=F('is_deleted_by_sender'),
+                    output_field=models.BooleanField()
+                ),
+                is_deleted_by_receiver=Case(
+                    When(receiver=user, then=True),
+                    default=F('is_deleted_by_receiver'),
+                    output_field=models.BooleanField()
+                )
+            )
+
+            # Delete messages that are now marked as deleted by both users
+            # Only delete from this specific conversation
+            deleted_count = conversation_messages.filter(
+                is_deleted_by_sender=True,
+                is_deleted_by_receiver=True
+            ).delete()[0]
+
+            logger.info(
+                f"User {user.id} deleted conversation with user {other_user_id}. "
+                f"Updated {updated} messages, permanently deleted {deleted_count} messages."
+            )
+
+        return Response(
+            {'status': f'Conversation deleted. {deleted_count} messages permanently removed.'},
+            status=status.HTTP_200_OK
+        )

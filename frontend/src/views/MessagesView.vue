@@ -21,12 +21,6 @@
               >
                 New Message
               </button>
-              <span
-                v-if="totalUnreadCount > 0"
-                class="bg-red-500 text-white text-sm rounded-full px-3 py-1"
-              >
-                {{ totalUnreadCount }}
-              </span>
             </div>
           </div>
           <!-- Loading State -->
@@ -55,16 +49,6 @@
                   class="w-12 h-12 rounded-full object-cover shadow"
                   @error="handleImageError"
                 />
-                <div
-                  v-if="conversation.unread_count > 0"
-                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-                >
-                  {{
-                    conversation.unread_count > 9
-                      ? "9+"
-                      : conversation.unread_count
-                  }}
-                </div>
               </div>
               <div class="flex-1 min-w-0">
                 <h3
@@ -423,18 +407,21 @@ const selectConversation = async (conversation) => {
       isReceived: m.sender.id !== currentUserId.value,
     }));
 
+    if (conversation.unread_count > 0) {
+      await markConversationAsRead();
+    }
+
     conversation.unread_count = 0;
     await fetchUnreadCount();
     scrollToBottom();
   } catch (err) {
     console.error("Failed to fetch messages:", err);
-    showError("Failed to load messages");
+    toast.err("Failed to load messages");
     messages.value = [];
   } finally {
     loadingMessages.value = false;
   }
 };
-
 const sendMessage = async () => {
   if (!newMessage.value.trim() || !selectedConversation.value || sending.value)
     return;
@@ -442,19 +429,70 @@ const sendMessage = async () => {
   sending.value = true;
   const content = newMessage.value.trim();
 
+  // Create the optimistic message
+  const tempMessage = {
+    id: `temp-${Date.now()}`,
+    content,
+    isReceived: false,
+    sender: { id: currentUserId.value },
+    sent_at: new Date().toISOString(),
+    is_read: false,
+    sending: true,
+  };
+
+  // Add optimistic message to the UI
+  messages.value.push(tempMessage);
+  const prevScrollHeight = messagesContainer.value.scrollHeight;
+  const prevScrollTop = messagesContainer.value.scrollTop;
+  newMessage.value = "";
+
+  await nextTick();
+  scrollToBottom();
+
   try {
+    // Send the actual message to the backend
     const { data } = await axios.post("/messaging/messages/", {
       receiver_id: selectedConversation.value.participant.id,
       content,
     });
 
-    messages.value.push({ ...data, isReceived: false });
-    newMessage.value = "";
-    scrollToBottom();
+    // Find and replace the temporary message with the real one
+    const tempIndex = messages.value.findIndex((m) => m.id === tempMessage.id);
+    if (tempIndex !== -1) {
+      messages.value[tempIndex] = { ...data, isReceived: false };
+    } else {
+      // Fallback in case findIndex fails: remove temp and add real
+      messages.value = messages.value.filter((m) => m.id !== tempMessage.id);
+      messages.value.push({ ...data, isReceived: false });
+    }
 
-    await fetchConversations();
+    // Update the conversation sidebar with the new message
+    const conv = conversations.value.find(
+      (c) => c.participant.id === selectedConversation.value.participant.id
+    );
+    if (conv) {
+      conv.latest_message = data;
+      conv.last_activity = data.sent_at;
+      // Move this conversation to the top
+      const index = conversations.value.findIndex(
+        (c) => c.participant.id === conv.participant.id
+      );
+      if (index > 0) {
+        const [movedConv] = conversations.value.splice(index, 1);
+        conversations.value.unshift(movedConv);
+      }
+    }
+
+    await nextTick();
+    scrollToBottom();
   } catch (err) {
     console.error("Send failed:", err.response?.data);
+    // Rollback: remove the optimistic message on failure
+    messages.value = messages.value.filter((m) => m.id !== tempMessage.id);
+    // Restore scroll position
+    await nextTick();
+    messagesContainer.value.scrollTop = prevScrollTop;
+
     const msg =
       err.response?.data?.detail ||
       err.response?.data?.message ||
@@ -462,7 +500,7 @@ const sendMessage = async () => {
         .flat()
         .join(", ") ||
       "Failed to send message.";
-    showError(msg);
+    toast.err(msg);
   } finally {
     sending.value = false;
   }
@@ -479,7 +517,7 @@ const markConversationAsRead = async () => {
       if (m.isReceived) m.is_read = true;
     });
     await fetchUnreadCount();
-    showSuccess("Conversation marked as read");
+    toast.success("Conversation marked as read");
   } catch (err) {
     console.error("Failed to mark as read:", err);
     showError("Failed to mark conversation as read");
@@ -491,19 +529,22 @@ const deleteConversation = async () => {
   if (!confirm("Are you sure you want to delete this conversation?")) return;
 
   try {
-    await axios.delete("/messaging/messages/delete_conversation/", {
-      data: { user_id: selectedConversation.value.participant.id },
+    // Corrected to use POST, which is a more reliable method for custom actions
+    await axios.post("/messaging/messages/delete_conversation/", {
+      user_id: selectedConversation.value.participant.id,
     });
+
+    // Optimistically update the UI
     conversations.value = conversations.value.filter(
       (c) => c.participant.id !== selectedConversation.value.participant.id
     );
     selectedConversation.value = null;
     messages.value = [];
     await fetchUnreadCount();
-    showSuccess("Conversation deleted");
+    toast.success("Conversation deleted");
   } catch (err) {
     console.error("Delete failed:", err);
-    showError("Failed to delete conversation");
+    toast.error("Failed to delete conversation");
   }
 };
 
@@ -520,7 +561,7 @@ const handleSelectUser = async (user) => {
     conv = { participant: user, latest_message: null, unread_count: 0 };
     selectedConversation.value = conv;
     messages.value = [];
-    showSuccess(`Conversation with ${getDisplayName(user)} started!`);
+    toast.success(`Conversation with ${getDisplayName(user)} started!`);
   }
 
   showSearchModal.value = false;
