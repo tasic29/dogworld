@@ -4,6 +4,7 @@ from .models import MyUser, Notification
 from marketplace.models import Product
 from services.models import Service
 from messaging.models import Message
+from content.models import Blog, Post
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
@@ -81,9 +82,12 @@ class NotificationSerializer(serializers.ModelSerializer):
         elif isinstance(target, Service):
             return f"/services/{target.slug}"
 
-        # 👇 NEW: handle messages
         elif isinstance(target, Message):
-            # Redirect to conversation with the sender
             return f"/messages/conversation/?user_id={target.sender.id}"
+
+        elif isinstance(target, Blog):
+            return f"/blog/{target.id}#ratings"
+        elif isinstance(target, Post):
+            return f"/post/{target.id}#ratings"
 
         return "/"
