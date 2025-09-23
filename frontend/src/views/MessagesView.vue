@@ -127,7 +127,7 @@
             </div>
             <!-- Messages Container -->
             <div
-              class="space-y-4 overflow-y-auto flex-1 p-2 -m-2"
+              class="space-y-4 overflow-y-auto flex-1 p-2 -m-2 messages-container"
               ref="messagesContainer"
               @scroll="handleScroll"
             >
@@ -357,10 +357,38 @@ const showSuccess = (msg) => {
 };
 
 // Scroll
-const scrollToBottom = async () => {
+const scrollToBottom = async (force = false) => {
   await nextTick();
+
   if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+    const container = messagesContainer.value;
+    const scrollHeight = container.scrollHeight;
+    const clientHeight = container.clientHeight;
+
+    // Only scroll if there are messages to scroll to or if forced
+    if (scrollHeight > clientHeight || force) {
+      container.scrollTop = scrollHeight;
+
+      // Double-check with a small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        if (
+          container.scrollHeight >
+          container.scrollTop + container.clientHeight
+        ) {
+          container.scrollTop = container.scrollHeight;
+        }
+      }, 10);
+
+      // Triple-check with a longer delay for slow renders
+      setTimeout(() => {
+        if (
+          container.scrollHeight >
+          container.scrollTop + container.clientHeight
+        ) {
+          container.scrollTop = container.scrollHeight;
+        }
+      }, 100);
+    }
   }
 };
 
@@ -407,21 +435,27 @@ const selectConversation = async (conversation) => {
       isReceived: m.sender.id !== currentUserId.value,
     }));
 
+    // Mark as read if needed
     if (conversation.unread_count > 0) {
       await markConversationAsRead();
     }
 
     conversation.unread_count = 0;
     await fetchUnreadCount();
-    scrollToBottom();
   } catch (err) {
     console.error("Failed to fetch messages:", err);
-    toast.err("Failed to load messages");
+    toast.error("Failed to load messages");
     messages.value = [];
   } finally {
     loadingMessages.value = false;
+
+    // Ensure scroll happens after loading is complete
+    await nextTick();
+    // Force scroll to bottom when opening a conversation
+    await scrollToBottom(true);
   }
 };
+
 const sendMessage = async () => {
   if (!newMessage.value.trim() || !selectedConversation.value || sending.value)
     return;
@@ -517,7 +551,6 @@ const markConversationAsRead = async () => {
       if (m.isReceived) m.is_read = true;
     });
     await fetchUnreadCount();
-    toast.success("Conversation marked as read");
   } catch (err) {
     console.error("Failed to mark as read:", err);
     showError("Failed to mark conversation as read");
@@ -548,6 +581,45 @@ const deleteConversation = async () => {
   }
 };
 
+const loadOlderMessages = async () => {
+  if (!selectedConversation.value) return;
+
+  loadingMessages.value = true;
+
+  try {
+    const oldestMessage = messages.value[0];
+    const { data } = await axios.get(
+      `/messaging/messages/conversation/?user_id=${selectedConversation.value.participant.id}&before=${oldestMessage.id}`
+    );
+
+    const olderMessages = data.results || data;
+
+    if (olderMessages.length > 0) {
+      // Remember current scroll position before adding messages
+      const prevScrollHeight = messagesContainer.value.scrollHeight;
+
+      // Prepend the new (older) messages
+      messages.value = [
+        ...olderMessages.map((m) => ({
+          ...m,
+          isReceived: m.sender.id !== currentUserId.value,
+        })),
+        ...messages.value,
+      ];
+
+      await nextTick();
+
+      // Adjust scroll so user stays at the same spot
+      const newScrollHeight = messagesContainer.value.scrollHeight;
+      messagesContainer.value.scrollTop = newScrollHeight - prevScrollHeight;
+    }
+  } catch (err) {
+    console.error("Failed to load older messages:", err);
+  } finally {
+    loadingMessages.value = false;
+  }
+};
+
 // ==============
 // Search modal
 // ==============
@@ -555,18 +627,20 @@ const handleSelectUser = async (user) => {
   let conv = conversations.value.find((c) => c.participant.id === user.id);
 
   if (conv) {
-    selectedConversation.value = conv;
+    await selectConversation(conv);
     toast.success(`Conversation with ${getDisplayName(user)} selected!`);
   } else {
     conv = { participant: user, latest_message: null, unread_count: 0 };
     selectedConversation.value = conv;
     messages.value = [];
     toast.success(`Conversation with ${getDisplayName(user)} started!`);
+
+    // For new conversations, ensure we scroll after DOM updates
+    await nextTick();
+    await scrollToBottom(true);
   }
 
   showSearchModal.value = false;
-  await nextTick();
-  scrollToBottom();
 };
 
 // ==============
@@ -597,5 +671,21 @@ watch(
   }
 );
 
-watch(messages, () => scrollToBottom());
+watch(
+  messages,
+  async (newMessages, oldMessages) => {
+    // Only auto-scroll if we added a message (not when loading a conversation)
+    if (newMessages.length > oldMessages.length) {
+      await nextTick();
+      scrollToBottom();
+    }
+  },
+  { deep: true, immediate: false }
+);
 </script>
+
+<style scoped>
+.messages-container {
+  scroll-behavior: smooth;
+}
+</style>

@@ -17,9 +17,6 @@ class MessageManager(models.Manager):
 
     def get_user_conversations(self, user):
         """Get all conversations for a user with metadata - OPTIMIZED"""
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-
         # Subquery to get the latest message for each conversation
         conversations = (
             self.filter(
@@ -52,18 +49,16 @@ class MessageManager(models.Manager):
             )
             .order_by('-last_activity')
         )
-
         return conversations
 
     def get_conversation_with_user(self, user, other_user_id):
         """Get conversation between user and specific other user"""
-        try:
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
-            other_user = User.objects.get(id=other_user_id)
-            return self.get_conversation(user, other_user)
-        except User.DoesNotExist:
-            return self.none()
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        other_user = User.objects.filter(id=other_user_id).first()
+        if not other_user:
+            raise User.DoesNotExist(f"User with id={other_user_id} not found")
+        return self.get_conversation(user, other_user)
 
     def get_unread_count(self, user):
         """Get total unread message count for user"""
@@ -75,8 +70,6 @@ class MessageManager(models.Manager):
 
     def mark_conversation_as_read(self, user, other_user):
         """Mark all messages from other_user to user as read"""
-        from django.utils import timezone
-
         return self.filter(
             sender=other_user,
             receiver=user,
@@ -110,7 +103,6 @@ class Message(models.Model):
     is_deleted_by_sender = models.BooleanField(default=False)
     is_deleted_by_receiver = models.BooleanField(default=False)
     sent_at = models.DateTimeField(auto_now_add=True)
-    # Track when message was read
     read_at = models.DateTimeField(null=True, blank=True)
 
     objects = MessageManager()
@@ -136,13 +128,17 @@ class Message(models.Model):
             return self.attachment.url
         return None
 
+    def hard_delete_if_both_deleted(self):
+        """Permanently delete if both users deleted the message"""
+        if self.is_deleted_by_sender and self.is_deleted_by_receiver:
+            self.delete()
+
     class Meta:
         ordering = ['-sent_at']
-
-    indexes = [
-        models.Index(fields=['sender', 'receiver', '-sent_at']),
-        models.Index(fields=['receiver', 'is_read', '-sent_at']),
-        models.Index(fields=['is_deleted_by_sender',
-                     'is_deleted_by_receiver']),
-        models.Index(fields=['receiver', 'is_deleted_by_receiver']),
-    ]
+        indexes = [
+            models.Index(fields=['sender', 'receiver', '-sent_at']),
+            models.Index(fields=['receiver', 'is_read', '-sent_at']),
+            models.Index(fields=['is_deleted_by_sender',
+                         'is_deleted_by_receiver']),
+            models.Index(fields=['receiver', 'is_deleted_by_receiver']),
+        ]

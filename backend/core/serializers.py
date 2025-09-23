@@ -3,6 +3,7 @@ from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer,
 from .models import MyUser, Notification
 from marketplace.models import Product
 from services.models import Service
+from messaging.models import Message
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
@@ -67,12 +68,22 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     def get_target_url(self, obj):
         target = obj.content_object
-        if hasattr(target, 'blog') and target.blog:
+
+        if hasattr(target, "blog") and target.blog:
             return f"/blog/{target.blog.id}/#comment-{target.id}"
-        elif hasattr(target, 'post') and target.post:
+
+        elif hasattr(target, "post") and target.post:
             return f"/post/{target.post.id}/#comment-{target.id}"
+
         elif isinstance(target, Product):
             return f"/marketplace/product/{target.slug}"
+
         elif isinstance(target, Service):
             return f"/services/{target.slug}"
+
+        # 👇 NEW: handle messages
+        elif isinstance(target, Message):
+            # Redirect to conversation with the sender
+            return f"/messages/conversation/?user_id={target.sender.id}"
+
         return "/"

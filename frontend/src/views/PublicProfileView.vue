@@ -69,11 +69,12 @@
 
         <!-- Messaging Button -->
         <div class="mt-10 text-center">
-          <button
+          <router-link
+            :to="{ name: 'messages' }"
             class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl shadow transition transform hover:scale-105"
           >
-            📬 Send Message
-          </button>
+            📬 Go to Messages
+          </router-link>
         </div>
       </div>
 

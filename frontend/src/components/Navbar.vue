@@ -402,8 +402,11 @@ const handleNotificationClick = async (notif) => {
           params: { userId: userId },
         });
       } else {
-        // Fallback for other types of notifications
-        router.push(notif.target_url);
+        // 👇 Append the hash for comments
+        router.push({
+          path: notif.target_url,
+          hash: notif.comment_id ? `#comment-${notif.comment_id}` : "",
+        });
       }
     } else {
       toast.info("This notification has no link.");
@@ -420,61 +423,6 @@ const refreshNotifications = () => {
     fetchNotifications();
   }
 };
-// const fetchNotifications = async () => {
-//   if (!authStore.isAuthenticated) return;
-//   try {
-//     const response = await axios.get("/messaging/notifications/");
-//     notifications.value = response.data.filter((n) => !n.is_read);
-//   } catch (error) {
-//     // toast.error("Failed to fetch notifications");
-//   }
-// };
-
-// const markAsRead = async (id) => {
-//   try {
-//     // Debug logging
-//     console.log("Auth store state:", {
-//       isAuthenticated: authStore.isAuthenticated,
-//       hasJwtToken: !!authStore.jwtToken,
-//       hasUser: !!authStore.user,
-//       userId: authStore.user?.id,
-//       jwtToken: authStore.jwtToken ? "exists" : "missing",
-//     });
-
-//     // Check if axios has the auth header
-//     console.log("Axios default headers:", axios.defaults.headers.common);
-
-//     // Make the request
-//     const response = await axios.patch(
-//       `/messaging/notifications/${id}/mark_as_read/`
-//     );
-//     console.log("Mark as read response:", response.data);
-
-//     notifications.value = notifications.value.filter((n) => n.id !== id);
-//   } catch (err) {
-//     console.error("Error marking notification:", {
-//       status: err.response?.status,
-//       statusText: err.response?.statusText,
-//       data: err.response?.data,
-//       config: err.config,
-//       headers: err.response?.headers,
-//     });
-//     toast.error("Failed to mark notification as read");
-//   }
-// };
-
-// const handleNotificationClick = async (notif) => {
-//   try {
-//     await markAsRead(notif.id);
-//     if (notif.target_url) {
-//       router.push(notif.target_url);
-//     } else {
-//       toast.info("This notification has no link.");
-//     }
-//   } catch (err) {
-//     toast.error("Failed to open notification");
-//   }
-// };
 
 const handleClickOutside = (e) => {
   if (notifRef.value && !notifRef.value.contains(e.target)) {
