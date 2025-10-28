@@ -3,7 +3,7 @@
     class="sticky top-0 z-50 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-800 border-b-4 border-amber-300 dark:border-amber-600 shadow-xl transition-all duration-300"
   >
     <div
-      class="max-w-screen-xl mx-auto flex items-center justify-between px-4 py-3"
+      class="max-w-screen-xl mx-auto flex flex-wrap items-center justify-between px-4 py-3 gap-3"
     >
       <router-link :to="{ name: 'home' }" class="flex items-center group">
         <div class="relative">
@@ -19,7 +19,7 @@
           </div>
         </div>
         <span
-          class="ml-3 text-2xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-300 group-hover:scale-105 group-hover:from-amber-600 group-hover:to-orange-500 transition-all duration-300 ease-in-out"
+          class="ml-3 text-xl sm:text-2xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-300 group-hover:scale-105 transition-all"
         >
           DOGWORLD
         </span>
@@ -191,7 +191,7 @@
 
       <button
         @click="isMobileMenuOpen = !isMobileMenuOpen"
-        class="lg:hidden text-amber-600 dark:text-amber-300 focus:outline-none"
+        class="lg:hidden text-amber-600 dark:text-amber-300 focus:outline-none ml-2"
       >
         <span class="sr-only">Toggle menu</span>
         <svg
@@ -227,105 +227,119 @@
       </button>
     </div>
 
-    <div v-if="isMobileMenuOpen" class="px-4 pb-4 lg:hidden">
-      <div
-        v-if="authStore.isAuthenticated"
-        class="mb-3 px-4 py-2 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-slate-700 dark:to-slate-800 rounded-lg border border-amber-200 dark:border-slate-600"
-      >
-        <router-link
-          v-if="authStore.isAuthenticated && authStore.user"
-          :to="{
-            name: 'public-profile',
-            params: { username: authStore.user.username },
-          }"
+    <div
+      v-if="isMobileMenuOpen"
+      class="lg:hidden w-full bg-gradient-to-b from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-900 border-t border-amber-200 dark:border-slate-700"
+    >
+      <div class="px-4 py-3 space-y-3">
+        <!-- User info -->
+        <div
+          v-if="authStore.isAuthenticated"
+          class="px-4 py-2 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-slate-700 dark:to-slate-800 rounded-lg border border-amber-200 dark:border-slate-600"
         >
-          <p class="text-sm font-medium text-amber-700 dark:text-amber-300">
-            🐕 Welcome, {{ authStore.user.username }}!
-          </p>
-        </router-link>
-      </div>
+          <router-link
+            v-if="authStore.isAuthenticated && authStore.user"
+            :to="{
+              name: 'public-profile',
+              params: { username: authStore.user.username },
+            }"
+          >
+            <p class="text-sm font-medium text-amber-700 dark:text-amber-300">
+              🐕 Welcome, {{ authStore.user.username }}!
+            </p>
+          </router-link>
+        </div>
 
-      <ul class="space-y-2">
-        <li>
-          <router-link
-            :to="{ name: 'home' }"
-            class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
-          >
-            🏠 Home
-          </router-link>
-        </li>
-        <li>
-          <router-link
-            :to="{ name: 'blogs' }"
-            class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
-          >
-            📝 Blog
-          </router-link>
-        </li>
-        <li>
-          <router-link
-            :to="{ name: 'posts' }"
-            class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
-            >📸 Posts</router-link
-          >
-        </li>
-        <li>
-          <router-link
-            :to="{ name: 'marketplace' }"
-            class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
-            >🛒 Marketplace</router-link
-          >
-        </li>
-        <li>
-          <router-link
-            :to="{ name: 'services' }"
-            class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
-            >🐕‍🦺 Services</router-link
-          >
-        </li>
-        <router-link
-          :to="{ name: 'messages' }"
-          class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
-        >
-          💬 Messages
-        </router-link>
-        <template v-if="!authStore.isAuthenticated">
+        <!-- Menu links -->
+        <ul class="space-y-2 text-gray-700 dark:text-gray-300">
           <li>
             <router-link
-              :to="{ name: 'signup' }"
-              class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
+              :to="{ name: 'home' }"
+              class="block w-full px-4 py-2 rounded-lg text-left hover:bg-amber-100 dark:hover:bg-slate-700 transition"
             >
-              🦴 Join the Pack
+              🏠 Home
             </router-link>
           </li>
           <li>
             <router-link
-              :to="{ name: 'login' }"
-              class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
+              :to="{ name: 'blogs' }"
+              class="block w-full px-4 py-2 rounded-lg text-left hover:bg-amber-100 dark:hover:bg-slate-700 transition"
             >
-              🔐 Login
+              📝 Blog
             </router-link>
           </li>
-        </template>
-        <template v-else>
           <li>
             <router-link
-              :to="{ name: 'account' }"
-              class="block px-4 py-2 rounded hover:bg-amber-100 dark:hover:bg-slate-700"
+              :to="{ name: 'posts' }"
+              class="block w-full px-4 py-2 rounded-lg text-left hover:bg-amber-100 dark:hover:bg-slate-700 transition"
             >
-              ⚙️ Profile Settings
+              📸 Posts
             </router-link>
           </li>
           <li>
-            <button
-              @click="logout"
-              class="block w-full text-left py-2 px-4 text-red-600 hover:bg-amber-100 dark:hover:bg-slate-700 rounded"
+            <router-link
+              :to="{ name: 'marketplace' }"
+              class="block w-full px-4 py-2 rounded-lg text-left hover:bg-amber-100 dark:hover:bg-slate-700 transition"
             >
-              🚪 Logout
-            </button>
+              🛒 Marketplace
+            </router-link>
           </li>
-        </template>
-      </ul>
+          <li>
+            <router-link
+              :to="{ name: 'services' }"
+              class="block w-full px-4 py-2 rounded-lg text-left hover:bg-amber-100 dark:hover:bg-slate-700 transition"
+            >
+              🐕‍🦺 Services
+            </router-link>
+          </li>
+          <li>
+            <router-link
+              :to="{ name: 'messages' }"
+              class="block w-full px-4 py-2 rounded-lg text-left hover:bg-amber-100 dark:hover:bg-slate-700 transition"
+            >
+              💬 Messages
+            </router-link>
+          </li>
+
+          <template v-if="!authStore.isAuthenticated">
+            <li>
+              <router-link
+                :to="{ name: 'signup' }"
+                class="block w-full px-4 py-2 rounded-lg text-left hover:bg-amber-100 dark:hover:bg-slate-700 transition"
+              >
+                🦴 Join the Pack
+              </router-link>
+            </li>
+            <li>
+              <router-link
+                :to="{ name: 'login' }"
+                class="block w-full px-4 py-2 rounded-lg text-left hover:bg-amber-100 dark:hover:bg-slate-700 transition"
+              >
+                🔐 Login
+              </router-link>
+            </li>
+          </template>
+
+          <template v-else>
+            <li>
+              <router-link
+                :to="{ name: 'account' }"
+                class="block w-full px-4 py-2 rounded-lg text-left hover:bg-amber-100 dark:hover:bg-slate-700 transition"
+              >
+                ⚙️ Profile Settings
+              </router-link>
+            </li>
+            <li>
+              <button
+                @click="logout"
+                class="block w-full text-left py-2 px-4 text-red-600 hover:bg-amber-100 dark:hover:bg-slate-700 rounded-lg transition"
+              >
+                🚪 Logout
+              </button>
+            </li>
+          </template>
+        </ul>
+      </div>
     </div>
   </nav>
 </template>
@@ -444,6 +458,10 @@ watch(
     }
   }
 );
+
+watch(isMobileMenuOpen, (open) => {
+  document.body.style.overflow = open ? "hidden" : "auto";
+});
 
 onMounted(() => {
   if (authStore.isAuthenticated) {
