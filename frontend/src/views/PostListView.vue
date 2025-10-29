@@ -1,27 +1,31 @@
 <template>
   <section
-    class="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12 px-4"
+    class="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-10 sm:py-12 px-3 sm:px-6"
   >
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
-      <div class="flex justify-between items-center mb-12">
+      <div
+        class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6 mb-10 sm:mb-12 text-center sm:text-left"
+      >
         <div>
           <h1
-            class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400"
+            class="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400"
           >
             🐕 User's Posts
           </h1>
-          <p class="text-gray-600 dark:text-gray-400 mt-2">
+          <p class="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
             Browse and manage your published posts
           </p>
         </div>
 
         <!-- View Toggle -->
-        <div class="flex items-center gap-3">
+        <div
+          class="flex flex-wrap justify-center sm:justify-end items-center gap-3"
+        >
           <router-link
             v-if="authStore.isAuthenticated"
             :to="{ name: 'post-create' }"
-            class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-2 sm:py-3 px-5 sm:px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-sm sm:text-base"
           >
             Create Post
           </router-link>
@@ -42,10 +46,10 @@
 
       <!-- Filters -->
       <div
-        class="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-lg border border-white/20"
+        class="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl p-5 sm:p-6 mb-8 shadow-lg border border-white/20"
       >
-        <div class="flex flex-wrap items-center gap-4">
-          <div class="relative flex-1 min-w-64">
+        <div class="flex flex-col sm:flex-row flex-wrap gap-4">
+          <div class="relative flex-1 min-w-full sm:min-w-64">
             <div
               class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
             >
@@ -61,7 +65,7 @@
 
           <select
             v-model="selectedTag"
-            class="px-4 py-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:outline-none bg-white/90 dark:bg-slate-700/90 min-w-48"
+            class="flex-1 sm:flex-none px-4 py-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:outline-none bg-white/90 dark:bg-slate-700/90 min-w-full sm:min-w-48"
           >
             <option value="">🏷️ All Tags</option>
             <option v-for="tag in tags" :key="tag.id" :value="tag.id">
@@ -71,7 +75,7 @@
 
           <select
             v-model="selectedOrdering"
-            class="px-4 py-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:outline-none bg-white/90 dark:bg-slate-700/90 min-w-48"
+            class="flex-1 sm:flex-none px-4 py-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:outline-none bg-white/90 dark:bg-slate-700/90 min-w-full sm:min-w-48"
           >
             <option value="-created_at">🆕 Newest</option>
             <option value="created_at">⏰ Oldest</option>
@@ -86,7 +90,7 @@
         v-if="posts.length"
         :class="
           viewMode === 'grid'
-            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10'
+            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10'
             : 'space-y-8'
         "
       >
@@ -94,32 +98,30 @@
           v-for="post in posts"
           :key="post.id"
           :to="`/post/${post.id}`"
-          class="rounded-2xl overflow-hidden shadow-xl flex flex-col bg-amber-100/40 dark:bg-slate-700/60 border border-orange-200 dark:border-slate-700 hover:border-amber-400 transition-all duration-300 transform hover:scale-105"
+          class="rounded-2xl overflow-hidden shadow-xl flex flex-col bg-amber-100/40 dark:bg-slate-700/60 border border-orange-200 dark:border-slate-700 hover:border-amber-400 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl"
         >
           <!-- Image -->
-          <div class="relative">
+          <div
+            class="relative w-full aspect-[16/10] overflow-hidden bg-white dark:bg-slate-800"
+          >
+            <img
+              v-if="post.image"
+              :src="post.image"
+              alt="Post"
+              class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            />
             <div
-              class="flex items-center justify-center p-4 h-60 bg-white dark:bg-white"
+              v-else
+              class="flex items-center justify-center w-full h-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-slate-600 dark:to-slate-700"
             >
-              <img
-                v-if="post.image"
-                :src="post.image"
-                alt="Post"
-                class="w-auto h-auto max-w-full max-h-full object-contain rounded-2xl"
-              />
-              <div
-                v-else
-                class="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100 dark:from-slate-600 dark:to-slate-700"
-              >
-                <span class="text-6xl opacity-50">🐾</span>
-              </div>
+              <span class="text-6xl opacity-50">🐾</span>
             </div>
           </div>
 
           <!-- Content -->
-          <div class="px-6 py-4 mb-auto">
+          <div class="px-5 sm:px-6 py-4 flex flex-col flex-grow">
             <h2
-              class="cursor-pointer font-semibold text-xl inline-block text-amber-700 dark:text-amber-300 hover:text-amber-600 dark:hover:text-amber-400 transition duration-300 mb-2"
+              class="font-semibold text-lg sm:text-xl text-amber-700 dark:text-amber-300 hover:text-amber-600 dark:hover:text-amber-400 transition duration-300 mb-2 line-clamp-2"
             >
               {{ post.title }}
             </h2>
@@ -137,53 +139,56 @@
                 #{{ tag.name }}
               </span>
             </div>
-          </div>
 
-          <!-- Footer -->
-          <div
-            class="px-6 py-4 flex justify-between items-center bg-amber-100/40 dark:bg-slate-700/60 rounded-b-2xl"
-          >
-            <router-link
-              :to="`/post/${post.id}`"
-              class="text-sm font-medium text-amber-600 dark:text-amber-400 hover:underline"
-            >
-              📖 Read more →
-            </router-link>
+            <div class="mt-auto pt-4">
+              <router-link
+                :to="`/post/${post.id}`"
+                class="inline-flex items-center gap-1 text-sm font-medium text-amber-600 dark:text-amber-400 hover:text-orange-600 dark:hover:text-orange-400 transition-all duration-200"
+              >
+                📖 Read more →
+              </router-link>
+            </div>
           </div>
         </router-link>
       </div>
 
       <!-- No Posts -->
       <div v-else class="text-center py-16">
-        <div class="text-8xl mb-4">📭</div>
-        <h3 class="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-2">
+        <div class="text-7xl sm:text-8xl mb-4">📭</div>
+        <h3
+          class="text-xl sm:text-2xl font-bold text-gray-600 dark:text-gray-400 mb-2"
+        >
           No posts found
         </h3>
-        <p class="text-gray-500 dark:text-gray-400">
+        <p class="text-gray-500 dark:text-gray-400 text-sm sm:text-base">
           Try adjusting your search or filter criteria
         </p>
       </div>
 
       <!-- Pagination -->
-      <div class="mt-12 flex justify-center items-center gap-4">
+      <div
+        class="mt-10 sm:mt-12 flex flex-wrap justify-center items-center gap-4"
+      >
         <button
           @click="prevPage"
           :disabled="!previous"
-          class="flex items-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-slate-800 border-2 border-amber-200 dark:border-slate-600 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-gray-700 dark:text-gray-300 transition-all duration-200"
+          class="flex items-center gap-2 px-5 sm:px-6 py-2 sm:py-3 rounded-xl bg-white dark:bg-slate-800 border-2 border-amber-200 dark:border-slate-600 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-gray-700 dark:text-gray-300 transition-all duration-200 text-sm sm:text-base"
         >
-          <span>←</span> Previous
+          ← Previous
         </button>
 
-        <div class="px-4 py-2 bg-amber-500 text-white rounded-lg font-bold">
+        <div
+          class="px-4 py-2 bg-amber-500 text-white rounded-lg font-bold text-sm sm:text-base"
+        >
           Page {{ currentPage }}
         </div>
 
         <button
           @click="nextPage"
           :disabled="!next"
-          class="flex items-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-slate-800 border-2 border-amber-200 dark:border-slate-600 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-gray-700 dark:text-gray-300 transition-all duration-200"
+          class="flex items-center gap-2 px-5 sm:px-6 py-2 sm:py-3 rounded-xl bg-white dark:bg-slate-800 border-2 border-amber-200 dark:border-slate-600 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-gray-700 dark:text-gray-300 transition-all duration-200 text-sm sm:text-base"
         >
-          Next <span>→</span>
+          Next →
         </button>
       </div>
     </div>

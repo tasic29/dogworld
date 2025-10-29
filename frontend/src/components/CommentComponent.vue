@@ -1,25 +1,27 @@
 <template>
-  <section class="mt-2">
+  <section class="mt-4 px-3 sm:px-6">
     <div
-      class="bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow-lg hover:shadow-2xl transition p-8 max-w-4xl mx-auto"
+      class="bg-white/80 dark:bg-slate-800/90 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 sm:p-8 max-w-4xl mx-auto"
     >
-      <h2 class="text-lg font-bold text-amber-700 dark:text-amber-300 mb-6">
-        Comments ({{ comments.length }})
+      <h2
+        class="text-xl sm:text-2xl font-extrabold text-amber-700 dark:text-amber-300 mb-6 flex items-center gap-2"
+      >
+        💬 Comments ({{ comments.length }})
       </h2>
 
       <!-- New Comment Form -->
-      <div v-if="auth.isAuthenticated" class="mb-2">
+      <div v-if="auth.isAuthenticated" class="mb-6">
         <textarea
           v-model="newComment"
-          rows="2"
+          rows="3"
           placeholder="Please, share your thoughts..."
-          class="w-full p-2 rounded-xl border border-amber-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
+          class="w-full p-3 sm:p-4 rounded-xl border border-amber-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all duration-300 resize-none"
         ></textarea>
-        <div class="mt-2 text-right">
+        <div class="mt-3 text-right">
           <button
             @click="submitComment"
             :disabled="isSubmitting || !newComment.trim()"
-            class="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-5 py-2 mb-2 rounded-xl transition disabled:opacity-50"
+            class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50"
           >
             {{ isSubmitting ? "Posting..." : "Post Comment" }}
           </button>
@@ -27,28 +29,28 @@
       </div>
 
       <!-- Comment List -->
-      <div v-if="comments.length" class="space-y-4">
+      <transition-group name="fade" tag="div" class="space-y-5">
         <div
           v-for="comment in comments"
           :id="`comment-${comment.id}`"
           :key="comment.id"
-          class="relative p-4 rounded-3xl bg-amber-50 dark:bg-slate-700/70 shadow-lg"
+          class="relative p-4 sm:p-5 rounded-2xl bg-amber-50 dark:bg-slate-700/70 shadow-md hover:shadow-lg transition-all duration-300"
         >
           <!-- User & Date -->
-
-          <p class="text- text-gray-600 dark:text-gray-300 mb-2">
+          <p
+            class="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-3 flex flex-wrap items-center gap-2"
+          >
             <router-link
               :to="{
                 name: 'public-profile',
                 params: { username: comment.user.username },
               }"
-              class="text-amber-700 dark:text-amber-200 hover:underline"
+              class="text-amber-700 dark:text-amber-200 hover:underline font-semibold"
             >
-              <strong class="text-amber-700 dark:text-amber-300">
-                {{ comment.user.username }}
-              </strong>
+              {{ comment.user.username }}
             </router-link>
-            • {{ formatDate(comment.created) }}
+            <span class="text-gray-400">•</span>
+            <span>{{ formatDate(comment.created) }}</span>
           </p>
 
           <!-- Editable Text -->
@@ -56,34 +58,37 @@
             <textarea
               v-model="editContent"
               rows="3"
-              class="w-full p-3 rounded-xl border border-amber-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
+              class="w-full p-3 rounded-xl border border-amber-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all duration-300"
             ></textarea>
             <div class="mt-3 text-right space-x-2">
               <button
-                class="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded"
+                class="bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded-lg transition-all duration-300"
                 @click="updateComment(comment.id)"
               >
                 Save
               </button>
               <button
-                class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-1 rounded"
+                class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-1.5 rounded-lg transition-all duration-300"
                 @click="cancelEdit"
               >
                 Cancel
               </button>
             </div>
           </div>
+
+          <!-- Regular Comment -->
           <p
             v-else
-            class="text-gray-800 dark:text-gray-100 whitespace-pre-line"
+            class="text-gray-800 dark:text-gray-100 leading-relaxed break-words whitespace-pre-line"
           >
             {{ comment.content }}
           </p>
 
           <!-- Action Buttons -->
+          <!-- Action Buttons -->
           <div
             v-if="canManage(comment)"
-            class="absolute top-4 right-4 flex gap-3 text-sm"
+            class="mt-3 flex flex-wrap justify-end gap-3 text-xs sm:text-sm"
           >
             <button
               class="text-blue-500 hover:underline font-medium"
@@ -99,12 +104,12 @@
             </button>
           </div>
         </div>
-      </div>
+      </transition-group>
 
       <!-- Empty State -->
       <p
-        v-else
-        class="text-center text-gray-500 dark:text-gray-400 italic mt-4"
+        v-if="!comments.length"
+        class="text-center text-gray-500 dark:text-gray-400 italic mt-6 text-sm sm:text-base"
       >
         No comments yet. Be the first to leave a thought 🐾
       </p>
@@ -127,7 +132,6 @@
     />
   </section>
 </template>
-
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
@@ -255,3 +259,15 @@ const canManage = (comment) => {
   );
 };
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+</style>

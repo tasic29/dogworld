@@ -107,10 +107,6 @@
           </p>
         </div>
 
-        <!-- Error Message -->
-        <p v-if="error" class="text-red-600 font-medium">{{ error }}</p>
-        <p v-if="success" class="text-green-600 font-medium">{{ success }}</p>
-
         <!-- Submit -->
         <button
           type="submit"
